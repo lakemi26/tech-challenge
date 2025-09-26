@@ -66,10 +66,10 @@ export default function CadastroPage() {
         </p>
       </div>
 
-      <section className="rounded-2xl border bg-white p-6 shadow-sm">
-        <div className="grid gap-6 md:grid-cols-3">
+      <section className="rounded-2xl border bg-white p-6 shadow-sm max-w-[400px]">
+        <div className="p-4">
           <form onSubmit={onSubmit} className="md:col-span-2 space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-6">
               <FormField
                 label="Nome Completo"
                 placeholder="Digite seu nome completo"
@@ -88,18 +88,18 @@ export default function CadastroPage() {
                 autoComplete="email"
                 required
               />
-            </div>
-            <FormField
-              label="Senha"
-              placeholder="Digite sua senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              type="password"
-              autoComplete="password"
-              minLength={6}
-              required
-            />
 
+              <FormField
+                label="Senha"
+                placeholder="Digite sua senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                autoComplete="password"
+                minLength={6}
+                required
+              />
+            </div>
             {error && <p className="text-sm text-red-600">{error}</p>}
 
             <div className="flex items-center justify-between gap-3">

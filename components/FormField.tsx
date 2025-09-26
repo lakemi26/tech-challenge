@@ -41,7 +41,7 @@ export default function FormField({
 
   return (
     <div className="space-y-1">
-      <label className="block text-sm font-medium">{label}</label>
+      <label className="block text-sm font-bold">{label}</label>
 
       {as === "textarea" ? (
         <textarea className={sharedClasses} {...(props as TextAreaProps)} />

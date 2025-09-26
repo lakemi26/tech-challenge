@@ -55,7 +55,7 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <section className="rounded-2xl border bg-white p-6 shadow-sm">
+      <section className="rounded-2xl max-w-[400px] border bg-white p-6 shadow-sm">
         <form onSubmit={onSubmit} className="space-y-4 max-w-md">
           <FormField
             label="Email"
@@ -80,16 +80,17 @@ export default function LoginPage() {
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-gray-600">
-              Não tem conta?{" "}
-              <a href="/Cadastro" className="underline">
-                Criar conta
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-gray-600">
+                Não tem conta?{" "}
+                <a href="/Cadastro" className="underline">
+                  Criar conta
+                </a>
+              </p>
+              <a href="/ResetSenha" className="text-sm underline">
+                Esqueci minha senha
               </a>
-            </p>
-            <a href="/ResetSenha" className="text-sm underline">
-              Esqueci minha senha
-            </a>
-
+            </div>
             <Button
               type="submit"
               variant="primary"
