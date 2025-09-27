@@ -29,22 +29,21 @@ const Modal = forwardRef<ModalHandle, ModalProps>(function Modal(
     close: () => dialogRef.current?.close(),
   }));
 
-  function handleOutsideClick(e: React.MouseEvent<HTMLDialogElement>) {
-    const dlg = dialogRef.current;
-    if (!dlg) return;
-    const rect = dlg.getBoundingClientRect();
-    const inDialog =
-      e.clientX >= rect.left &&
-      e.clientX <= rect.right &&
-      e.clientY >= rect.top &&
-      e.clientY <= rect.bottom;
-    if (!inDialog) dlg.close();
+  function onBackdropClick(e: React.MouseEvent<HTMLDialogElement>) {
+    if (e.target === e.currentTarget) {
+      dialogRef.current?.close();
+    }
+  }
+
+  function onCancel(e: React.MouseEvent<HTMLDialogElement>) {
+    if (e.target === e.currentTarget) dialogRef.current?.close();
   }
 
   return (
     <dialog
       ref={dialogRef}
-      onClick={handleOutsideClick}
+      onClick={onBackdropClick}
+      onCancel={onCancel}
       className="m-auto w-full max-w-lg rounded-2xl border bg-white p-6 shadow-lg backdrop:bg-black/40"
     >
       <div className="mb-4 flex items-center justify-between">
