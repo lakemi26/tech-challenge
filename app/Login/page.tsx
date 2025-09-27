@@ -30,7 +30,7 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await loginUser({ email: email.trim(), password });
-      router.push("/");
+      router.push("/Inicio");
     } catch (err: unknown) {
       setError(authErrorMessage(err));
     } finally {
