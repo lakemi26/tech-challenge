@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { ButtonHTMLAttributes, ReactNode } from "react";
 
 type ButtonProps = {
@@ -27,7 +28,7 @@ export default function Button({
 
   return (
     <button
-      className={`${base} ${variants[variant]} ${className ?? ""}`}
+      className={cn(`${base} ${variants[variant]} ${className ?? ""}`)}
       {...props}
     >
       {icon}
