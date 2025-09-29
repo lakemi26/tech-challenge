@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Modal, { ModalHandle } from "./Modal";
 import Button from "./Button";
 import { FiPlus } from "react-icons/fi";
@@ -12,8 +12,10 @@ type Props = {
 
 export default function NewTransactionSection({ onCreated }: Props) {
   const modalRef = useRef<ModalHandle>(null);
+  const [formKey, setFormKey] = useState(0);
 
   function openModal() {
+    setFormKey((k) => k + 1);
     modalRef.current?.open();
   }
   function closeModal() {
@@ -52,7 +54,11 @@ export default function NewTransactionSection({ onCreated }: Props) {
 
       <Modal ref={modalRef} title="Nova Transação">
         <div id="transaction-modal">
-          <TransactionForm onSaved={handleSaved} onCancel={closeModal} />
+          <TransactionForm
+            key={formKey}
+            onSaved={handleSaved}
+            onCancel={closeModal}
+          />
         </div>
       </Modal>
     </div>

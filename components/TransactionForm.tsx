@@ -52,8 +52,8 @@ function parseBRLToNumber(masked: string) {
 export default function TransactionForm({ initial, onSaved, onCancel }: Props) {
   const isEdit = !!initial;
 
-  const [type, setType] = useState<TransactionType>("deposito");
-  const [category, setCategory] = useState<TransactionCategory>("salario");
+  const [type, setType] = useState<TransactionType | "">("");
+  const [category, setCategory] = useState<TransactionCategory | "">("");
   const [description, setDescription] = useState("");
   const [dateStr, setDateStr] = useState<string>(() =>
     new Date().toISOString().slice(0, 10)
@@ -65,12 +65,15 @@ export default function TransactionForm({ initial, onSaved, onCancel }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!initial) return;
-    setType(initial.type);
-    setCategory(initial.category);
-    setDescription(initial.description || "");
-    setDateStr(initial.date.toISOString().slice(0, 10));
-    setValueMasked(nfBRL.format(initial.value));
+    if (initial) {
+      setType(initial.type);
+      setCategory(initial.category);
+      setDescription(initial.description || "");
+      setDateStr(initial.date.toISOString().slice(0, 10));
+      setValueMasked(nfBRL.format(initial.value));
+    } else {
+      resetForm();
+    }
   }, [initial]);
 
   const heading = useMemo(
@@ -104,6 +107,9 @@ export default function TransactionForm({ initial, onSaved, onCancel }: Props) {
 
     setSubmitting(true);
     try {
+      const typeSafe = type as TransactionType;
+      const categorySafe = category as TransactionCategory;
+
       if (isEdit && initial) {
         await updateTransaction(initial.id, {
           type,
@@ -127,6 +133,16 @@ export default function TransactionForm({ initial, onSaved, onCancel }: Props) {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function resetForm() {
+    setType("");
+    setCategory("");
+    setDescription("");
+    setDateStr(new Date().toISOString().slice(0, 10));
+    setValueMasked("0,00");
+    setError(null);
+    setSubmitting(false);
   }
 
   return (
@@ -165,7 +181,9 @@ export default function TransactionForm({ initial, onSaved, onCancel }: Props) {
           as="select"
           label="Categoria"
           value={category}
-          onChange={(e) => setCategory(e.target.value as TransactionCategory)}
+          onChange={(e) =>
+            setCategory(e.target.value as TransactionCategory | "")
+          }
           options={[
             { value: "", label: "Selecione uma categoria" } as any,
             ...CATEGORY_OPTIONS,
