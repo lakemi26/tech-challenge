@@ -28,7 +28,7 @@ export default function NewTransactionSection({ onCreated }: Props) {
 
   return (
     <div>
-      <section className="rounded-2xl border bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border border-gray-400 bg-white p-5 shadow-sm my-5">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
             <h2 className="text-lg font-semibold">Nova Transação</h2>
