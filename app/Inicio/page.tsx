@@ -1,3 +1,4 @@
+import DebugTransactionsList from "@/components/DebugTransactionsList";
 import NewTransactionSection from "@/components/NewTransactionSection";
 import PageHeading from "@/components/PageHeading";
 import RequireAuth from "@/components/RequireAuth";
@@ -13,6 +14,7 @@ export default function Inicio() {
           />
         </header>
         <NewTransactionSection />
+        <DebugTransactionsList />
       </div>
     </RequireAuth>
   );
