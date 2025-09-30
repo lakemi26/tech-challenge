@@ -44,10 +44,10 @@ const Modal = forwardRef<ModalHandle, ModalProps>(function Modal(
       ref={dialogRef}
       onClick={onBackdropClick}
       onCancel={onCancel}
-      className="m-auto w-full max-w-lg rounded-2xl border bg-white p-6 shadow-lg backdrop:bg-black/40"
+      className="m-auto w-full max-w-lg rounded-2xl  bg-white p-6 shadow-lg backdrop:bg-black/40"
     >
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-500 hover:bg-gray-100">
+        <h2 className="text-lg font-semibold text-back hover:bg-gray-100">
           {title}
         </h2>
         <button
