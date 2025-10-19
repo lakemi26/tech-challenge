@@ -2,7 +2,7 @@ export default function Section({
   children,
   variant = "flex",
   minHeight = "min-h-[80vh]",
-  horizontalSpace = "px-16",
+  horizontalSpace = "",
   flexDirection = "flex-row",
   backgroundColor = "",
   className = "",

@@ -43,11 +43,13 @@ export default function Text({
   variant = "body",
   color = "primary",
   italic = false,
+  className = "",
 }: {
   children: React.ReactNode;
   variant?: keyof typeof textVariants;
   color?: keyof typeof colors.text;
   italic?: boolean;
+  className?: string;
 }) {
   const { weight, size, lineHeight } = textVariants[variant || "caption"];
   const styles: React.CSSProperties = {
@@ -60,5 +62,9 @@ export default function Text({
   if (italic) {
     styles.fontStyle = "italic";
   }
-  return <span style={styles}>{children}</span>;
+  return (
+    <span className={className} style={styles}>
+      {children}
+    </span>
+  );
 }
