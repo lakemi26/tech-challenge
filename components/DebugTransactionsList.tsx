@@ -13,6 +13,8 @@ import TransactionForm from "./TransactionForm";
 import TransactionDetailsModal, {
   TransactionDetailsHandle,
 } from "./TransactionDetailsModal";
+import { Card } from "./Card";
+import { RiArrowRightDownLine, RiArrowRightUpLine } from "react-icons/ri";
 
 type Props = {
   year?: number;
@@ -58,32 +60,68 @@ export default function DebugTransactionsList({ year, month1to12 }: Props) {
     setEditing(null);
   }
 
+  type TransactionRowProp = {
+    t: Transaction;
+  };
+  function TransactionRow({ t }: TransactionRowProp) {
+    const textColor =
+      t?.type === "saque"
+        ? "text-red-500"
+        : t?.type === "deposito"
+        ? "text-green-600"
+        : "text-blue-500";
+
+    return (
+      <section
+        key={t.id}
+        onClick={() => openView(t)}
+        className="flex justify-between rounded-lg border border-gray-200 bg-white p-5  w-full transition hover:shadow-md mb-3 cursor-pointer"
+      >
+        <div className="flex items-center gap-2.5">
+          {t?.type === "deposito" ? (
+            <RiArrowRightUpLine className={textColor} />
+          ) : (
+            <RiArrowRightDownLine className={textColor} />
+          )}
+
+          <div>
+            <p className="font-semibold">{t?.description}</p>
+            <p className="opacity-60">
+              {t.category} •{" "}
+              {t.date.toLocaleDateString("pt-BR", {
+                day: "2-digit",
+                month: "short",
+              })}
+            </p>
+          </div>
+        </div>
+
+        <div className="text-end">
+          <h2 className={`font-bold ${textColor}`}>{nfBRL.format(t.value)}</h2>
+
+          <div className="mt-1">
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
+              {t?.category}
+            </span>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <div>
-      <h3>
-        Transações de {String(m).padStart(2, "0")}/{y}
-      </h3>
-
-      {items.length === 0 ? (
-        <p>(sem transações)</p>
-      ) : (
-        <ul>
-          {items.map((t) => (
-            <li key={t.id}>
-              <span>
-                {t.description || "(sem descrição)"} — {t.type} — {t.category} —{" "}
-                {nfBRL.format(t.value)} — {t.date.toLocaleDateString("pt-BR")}
-              </span>{" "}
-              <RowActionButtons
-                itemLabel={t.description}
-                onView={() => openView(t)}
-                onEdit={() => openEdit(t)}
-                onDelete={() => handleDelete(t)}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
+      <Card title={`Últimas transações`}>
+        {items.length === 0 ? (
+          <p>(sem transações)</p>
+        ) : (
+          <ul>
+            {items.map((t) => (
+              <TransactionRow t={t} key={t.id} />
+            ))}
+          </ul>
+        )}
+      </Card>
 
       <TransactionDetailsModal
         ref={detailsRef}

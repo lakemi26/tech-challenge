@@ -29,15 +29,15 @@ export default function RowActionButtons({
   }
 
   return (
-    <div>
-      <div className="flex items-center gap-2">
+    <>
+      <div className="flex items-center gap-2 w-fit">
         <Button
           type="button"
           variant="ghost"
           aria-label="Ver detalhes"
           title="Ver detalhes"
           onClick={onView}
-          className="h-9 w-9 p-0 text-slate-800"
+          className="h-6 w-6 p-0 text-slate-800"
           icon={<FiEye />}
         />
 
@@ -47,7 +47,7 @@ export default function RowActionButtons({
           aria-label="Editar"
           title="Editar"
           onClick={onEdit}
-          className="h-9 w-9 p-0 text-slate-800"
+          className="h-6 w-6 p-0 text-slate-800"
           icon={<FiEdit2 />}
         />
 
@@ -57,12 +57,12 @@ export default function RowActionButtons({
           aria-label="Excluir"
           title="Excluir"
           onClick={openDelete}
-          className="h-9 w-9 p-0 text-slate-800"
+          className="h-6 w-6 p-0 text-slate-800"
           icon={<FiTrash2 className="h-4 w-4" />}
         />
       </div>
 
       <ConfirmDeleteModal ref={confirmRef} />
-    </div>
+    </>
   );
 }
