@@ -16,20 +16,13 @@ import Stars from "@/components/Stars";
 
 export default function Home() {
   return (
-    <div className="pt-8">
-      <header className="flex items-center justify-between px-16 ">
-        <Logo />
-
-        <div className="flex items-center gap-4">
-          <Button variant="secondary">Entrar</Button>
-          <Button>Criar Conta</Button>
-        </div>
-      </header>
-
-      <Spacer size={"lg"} />
-
-      <Section variant="grid" minHeight="min-h-screen" className="grid-cols-2">
-        <div className="flex flex-col items-start mb-60">
+    <div className="pt-8 max-sm:w-full max-sm:max-w-screen-lg">
+      <Section
+        variant="grid"
+        minHeight="min-h-screen"
+        className="max-sm:grid-cols-1 min-md:grid-cols-2 w-full min-md:px-16"
+      >
+        <div className="flex flex-col items-start min-md:mb-60 max-sm:px-4">
           <Text variant="h1">
             Gerencie suas
             <br />{" "}
@@ -52,12 +45,12 @@ export default function Home() {
 
           <Spacer size="sm" />
 
-          <div className="gap-4">
-            <Button className="w-4xs">Começar Grátis</Button>
+          <div className="gap-4 w-full pb-8">
+            <Button className="w-4xs max-sm:w-full">Começar Grátis</Button>
 
             <Spacer size="sm" />
 
-            <div className="flex items-center gap-6">
+            <div className="flex items-center max-sm:justify-center gap-6 max-sm:w-full">
               <div className="flex items-start justify-center gap-2">
                 <FiUsers size={20} className="text-black" />
                 <Text>+10.000 usuários</Text>
@@ -71,29 +64,23 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex items-center justify-end h-full">
-          <Image
-            src={ImageWithFallback}
-            alt="imagem"
-            className="w-6xl h-auto"
-          />
-        </div>
+        <Image src={ImageWithFallback} alt="imagem" className="w-full h-auto" />
       </Section>
 
-      <Section flexDirection="flex-col" className="justify-center">
-        <Text variant="h1">Recursos que fazem a diferença</Text>
+      <Section flexDirection="flex-col" className="justify-center max-sm:px-4">
+        <Text variant="h1" className="text-center">
+          Recursos que fazem a diferença
+        </Text>
 
-        <Text color="tertiary">
+        <Text color="tertiary" className="text-center">
           Tudo que você precisa para ter controle total sobre suas finanças
-          <br />
           pessoais em uma única plataforma.
         </Text>
 
-        <div className="flex justify-between gap-8 mt-16">
-          <div className="flex flex-col items-center text-center gap-4">
+        <div className="flex justify-between min-md:gap-8 mt-16 max-sm:flex-col max-sm:gap-16">
+          <div className="flex flex-col items-center text-center min-md:gap-4 max-sm:gap-2">
             <FiTrendingUp size={30} color={colors.brand.info} />
             <Text variant="h2">Controle Financeiro Completo</Text>
-            <Spacer size="sm" />
             <Text color="tertiary">
               Monitore suas receitas,
               <br /> despesas e saldo em tempo
@@ -101,10 +88,9 @@ export default function Home() {
             </Text>
           </div>
 
-          <div className="flex flex-col items-center text-center gap-4">
+          <div className="flex flex-col items-center text-center min-md:gap-4 max-sm:gap-2">
             <FiBarChart size={30} color={colors.brand.success} />
             <Text variant="h2">Relatórios Detalhados</Text>
-            <Spacer size="sm" />
             <Text color="tertiary">
               Visualize seus gastos por
               <br /> categoria e acompanhe
@@ -112,10 +98,9 @@ export default function Home() {
             </Text>
           </div>
 
-          <div className="flex flex-col items-center text-center gap-4">
+          <div className="flex flex-col items-center text-center min-md:gap-4 max-sm:gap-2">
             <FiShield size={30} color={colors.brand.secondary} />
             <Text variant="h2">Segurança Total</Text>
-            <Spacer size="sm" />
             <Text color="tertiary">
               Seus dados estão protegidos
               <br /> com a mais alta tecnologia
@@ -123,10 +108,9 @@ export default function Home() {
             </Text>
           </div>
 
-          <div className="flex flex-col items-center text-center gap-4">
+          <div className="flex flex-col items-center text-center min-md:gap-4 max-sm:gap-2">
             <FiSmartphone size={30} color={colors.brand.danger} />
             <Text variant="h2">Design Responsivo</Text>
-            <Spacer size="sm" />
             <Text color="tertiary">
               Acesse de qualquer dispositivo
               <br /> - desktop, tablet ou
@@ -139,7 +123,7 @@ export default function Home() {
       <Spacer size={"lg"} />
 
       <Section
-        className="justify-evenly"
+        className="flex justify-evenly max-sm:flex-col max-sm:items-center max-sm:gap-8 max-sm:py-16"
         minHeight="min-h-[20vh]"
         horizontalSpace="px-0"
         backgroundColor={colors.background.gradient.landing}
@@ -168,16 +152,14 @@ export default function Home() {
 
       <Section
         flexDirection="flex-col"
-        className="justify-center"
-        horizontalSpace="px-0"
+        className="justify-center max-sm:px-4 max-sm:py-8"
       >
         <Text variant="h1">O que nossos usuários dizem</Text>
         <Text color="tertiary">
           Depoimentos reais de quem transformou sua vida financeira
         </Text>
-        <Spacer size="lg" />
 
-        <div className="flex items-center justify-evenly w-full ">
+        <div className="flex min-md:items-center justify-evenly w-full max-sm:flex-col max-sm:gap-8 mt-8">
           <div className="flex flex-col gap-3">
             <Stars quantity={5} />
             <Text>
@@ -220,41 +202,28 @@ export default function Home() {
         </div>
       </Section>
 
-      <footer>
-        <Section
-          flexDirection="flex-col"
-          minHeight="min-h-[40vh]"
-          backgroundColor={colors.text.primary}
-          className="justify-center gap-4"
-        >
-          <Text variant="h1" color="white">
-            Pronto para transformar suas finanças?
-          </Text>
+      <Section
+        flexDirection="flex-col"
+        minHeight="min-h-[40vh]"
+        backgroundColor={colors.text.primary}
+        className="justify-center gap-4 max-sm:px-4 max-sm:py-8 max-sm:w-full"
+      >
+        <Text variant="h1" color="white" className="max-sm:text-center">
+          Pronto para transformar suas finanças?
+        </Text>
 
-          <Text variant="h3" color="white">
-            Junte-se a milhares de usuários que já estão no controle de suas
-            finanças
-          </Text>
+        <Text variant="h3" color="white" className="max-sm:text-center">
+          Junte-se a milhares de usuários que já estão no controle de suas
+          finanças
+        </Text>
 
-          <div className="flex items-center gap-4">
-            <Button className="w-xsm bg-white text-black">
-              Criar Conta Grátis
-            </Button>
-            <Button>Fazer Login</Button>
-          </div>
-        </Section>
-
-        <Section
-          className="justify-between"
-          minHeight="min-h-[20vh]"
-          backgroundColor={colors.background.dark}
-        >
-          <Logo className="text-white" textColor="white" />
-          <Text color="tertiary">
-            © 2025 FinanceApp. Todos os direitos reservados.
-          </Text>
-        </Section>
-      </footer>
+        <div className="flex items-center gap-4 max-sm:flex-col max-sm:w-full">
+          <Button className="w-xsm bg-white text-black max-sm:w-full">
+            Criar Conta Grátis
+          </Button>
+          <Button className="max-sm:w-full">Fazer Login</Button>
+        </div>
+      </Section>
     </div>
   );
 }

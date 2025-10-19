@@ -14,6 +14,7 @@ const baseColors = {
   red: "#D4183D",
   green: "#00A63E",
   blue: "#165DFB",
+  darkBlue: "#1E2939",
   blueGray: "#717182",
 };
 
@@ -40,6 +41,7 @@ export const colors = {
     secondary: baseColors.lightGray,
     tertiary: baseColors.gray,
     dark: baseColors.dark,
+    darkBlue: baseColors.darkBlue,
   },
   border: {
     primary: baseColors.darkGray,

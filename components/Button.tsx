@@ -7,6 +7,7 @@ type ButtonProps = {
   variant?: "primary" | "secondary" | "ghost";
   icon?: ReactNode;
   children?: ReactNode;
+  className?: string;
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
 export default function Button({
