@@ -5,6 +5,7 @@ import Logo from "@/components/Logo";
 import Text from "@/components/Text";
 import { colors } from "@/utils/tokens";
 import { Button } from "@/components";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,8 +36,12 @@ export default function RootLayout({
           <Logo />
 
           <div className="flex items-center gap-4  max-sm:gap-2">
-            <Button variant="secondary">Entrar</Button>
-            <Button>Criar Conta</Button>
+            <Link href="/Login">
+              <Button variant="secondary">Entrar</Button>
+            </Link>
+            <Link href="/Cadastro">
+              <Button>Criar Conta</Button>
+            </Link>
           </div>
         </header>
 

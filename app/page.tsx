@@ -13,6 +13,7 @@ import {
 } from "react-icons/fi";
 import Section from "@/components/Section";
 import Stars from "@/components/Stars";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -46,7 +47,11 @@ export default function Home() {
           <Spacer size="sm" />
 
           <div className="gap-4 w-full pb-8">
-            <Button className="w-4xs max-sm:w-full">Começar Grátis</Button>
+            <div className="flex items-center gap-4 max-sm:flex-col max-sm:w-full">
+              <Link href="/Cadastro">
+                <Button className="w-4xs max-sm:w-full">Começar Grátis</Button>
+              </Link>
+            </div>
 
             <Spacer size="sm" />
 
@@ -218,10 +223,14 @@ export default function Home() {
         </Text>
 
         <div className="flex items-center gap-4 max-sm:flex-col max-sm:w-full">
-          <Button className="w-xsm bg-white text-black max-sm:w-full">
-            Criar Conta Grátis
-          </Button>
-          <Button className="max-sm:w-full">Fazer Login</Button>
+          <Link href="/Cadastro">
+            <Button className="w-xsm bg-white text-black max-sm:w-full">
+              Criar Conta Grátis
+            </Button>
+          </Link>
+          <Link href="/Login">
+            <Button className="max-sm:w-full">Fazer Login</Button>
+          </Link>
         </div>
       </Section>
     </div>
