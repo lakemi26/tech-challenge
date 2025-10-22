@@ -8,9 +8,13 @@ import TransactionForm from "./TransactionForm";
 
 type Props = {
   onCreated?: () => void;
+  showButton?: Boolean;
 };
 
-export default function NewTransactionSection({ onCreated }: Props) {
+export default function NewTransactionSection({
+  onCreated,
+  showButton = false,
+}: Props) {
   const modalRef = useRef<ModalHandle>(null);
   const [formKey, setFormKey] = useState(0);
 
@@ -26,31 +30,41 @@ export default function NewTransactionSection({ onCreated }: Props) {
     onCreated?.();
   }
 
+  function RenderButton() {
+    return (
+      <Button
+        onClick={openModal}
+        variant="primary"
+        className="w-full md:w-auto shrink-0"
+        aria-haspopup="dialog"
+        aria-controls="transaction-modal"
+      >
+        <span className="inline-flex items-center justify-center gap-2">
+          <FiPlus aria-hidden />
+          Adicionar Transação
+        </span>
+      </Button>
+    );
+  }
+
   return (
     <div>
-      <section className="rounded-2xl border border-gray-400 bg-white p-5 shadow-sm my-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <h2 className="text-lg font-semibold">Nova Transação</h2>
-            <p className="text-sm text-gray-600">
-              Adicione uma nova transação à sua conta
-            </p>
-          </div>
+      {showButton ? (
+        <RenderButton />
+      ) : (
+        <section className="rounded-2xl border border-gray-200 bg-white p-5 my-5">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold">Nova Transação</h2>
+              <p className="text-sm text-gray-600">
+                Adicione uma nova transação à sua conta
+              </p>
+            </div>
 
-          <Button
-            onClick={openModal}
-            variant="primary"
-            className="shrink-0"
-            aria-haspopup="dialog"
-            aria-controls="transaction-modal"
-          >
-            <span className="inline-flex items-center gap-2">
-              <FiPlus aria-hidden />
-              Adicionar Transação
-            </span>
-          </Button>
-        </div>
-      </section>
+            <RenderButton />
+          </div>
+        </section>
+      )}
 
       <Modal ref={modalRef} title="Nova Transação">
         <div id="transaction-modal">

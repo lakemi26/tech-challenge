@@ -4,6 +4,7 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
+  signOut,
   updateProfile,
   User,
 } from "firebase/auth";
@@ -50,6 +51,10 @@ export async function loginUser({ email, password }: LoginInput) {
 
 export async function resetPassword(email: string): Promise<void> {
   await sendPasswordResetEmail(auth, email);
+}
+
+export async function logoutUser(): Promise<void> {
+  await signOut(auth);
 }
 
 export function authErrorMessage(err: unknown): string {

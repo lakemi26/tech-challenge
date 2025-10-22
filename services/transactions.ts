@@ -182,3 +182,27 @@ export async function getMonthySummary(year: number, month1to12: number) {
   const balance = income - expenses;
   return { income, expenses, balance, count: items.length };
 }
+
+export function onAllTransactions(cb: (items: Transaction[]) => void) {
+  const uid = requireUid();
+  const q = query(colRef(uid), orderBy("date", "desc"));
+
+  return onSnapshot(q, (snap: QuerySnapshot<DocumentData>) => {
+    const list = snap.docs.map((d) => {
+      const data = d.data() as any;
+      return {
+        id: d.id,
+        uid: data.uid,
+        type: data.type,
+        value: data.value,
+        description: data.description,
+        category: data.category,
+        date: (data.date as Timestamp).toDate(),
+        createdAt: data.createdAt
+          ? (data.createdAt as Timestamp).toDate()
+          : undefined,
+      } as Transaction;
+    });
+    cb(list);
+  });
+}
