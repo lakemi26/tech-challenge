@@ -8,6 +8,7 @@ type Props = {
   href?: string;
   className?: string;
   iconSize?: number;
+  textColor?: string;
 };
 
 export default function Logo({
@@ -16,6 +17,7 @@ export default function Logo({
   href = "/",
   className = "",
   iconSize = 18,
+  textColor = "black",
 }: Props) {
   return (
     <a
@@ -28,7 +30,12 @@ export default function Logo({
       </span>
 
       {showText && (
-        <span className="text-xl font-semibold text-slate-900">{name}</span>
+        <span
+          className={`text-xl font-semibold text-slate-900`}
+          style={{ color: textColor }}
+        >
+          {name}
+        </span>
       )}
     </a>
   );
