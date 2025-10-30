@@ -40,8 +40,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      <header className="mx-auto flex max-w-md flex-col items-center gap-3 px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-16">
+      <header className="mx-auto y-16 flex max-w-md flex-col items-center gap-3 px-4 py-8">
         <Logo />
         <Link
           href="/"

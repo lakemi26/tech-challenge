@@ -8,8 +8,7 @@ import RequireAuth from "@/components/RequireAuth";
 export default function Inicio() {
   return (
     <RequireAuth>
-      <Header />
-      <div className="p-12">
+      <div className="p-16 h-full">
         <header>
           <PageHeading
             title="Olá, {name}!"
