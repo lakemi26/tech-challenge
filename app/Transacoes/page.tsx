@@ -9,8 +9,7 @@ import { TransactionsTable } from "@/components/TransactionsTable";
 export default function Transacoes() {
   return (
     <RequireAuth>
-      <Header />
-      <div className="p-12">
+      <div className="p-16">
         <header className="flex items-center justify-between">
           <PageHeading
             title="Todas as transações"
@@ -18,6 +17,7 @@ export default function Transacoes() {
           />
           <NewTransactionSection showButton />
         </header>
+        
         <BalanceCard isTransaction />
         <TransactionsTable />
       </div>

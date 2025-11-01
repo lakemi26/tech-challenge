@@ -14,6 +14,7 @@ import {
 import Section from "@/components/Section";
 import Stars from "@/components/Stars";
 import Link from "next/link";
+import { Header } from "@/components/Header";
 
 export default function Home() {
   return (
@@ -48,7 +49,7 @@ export default function Home() {
 
           <div className="gap-4 w-full pb-8">
             <div className="flex items-center gap-4 max-sm:flex-col max-sm:w-full">
-              <Link href="/Cadastro">
+              <Link href="/Cadastro" className="w-4xs max-sm:w-full">
                 <Button className="w-4xs max-sm:w-full">Começar Grátis</Button>
               </Link>
             </div>

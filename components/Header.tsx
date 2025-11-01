@@ -4,11 +4,19 @@ import { BiHome, BiLogOut, BiTrendingUp } from "react-icons/bi";
 import Button from "./Button";
 import { logoutUser } from "@/services/auth";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useAuthUser } from "@/hooks/useAuthUser";
+import Logo from "./Logo";
+import Link from "next/link";
 
 export function Header() {
   const router = useRouter();
   const pathname = usePathname();
+  const user = useAuthUser();
+
+  const path = usePathname() ?? "";
+  const hide = path.startsWith("/Login") || path.startsWith("/Cadastro");
+
+  if (hide) return null;
 
   async function handleLogout() {
     try {
@@ -32,14 +40,12 @@ export function Header() {
     tabs.find((tab) => pathname.startsWith(tab.href))?.key || "inicio";
 
   return (
-    <header className="bg-white border-b border-border border-gray-200 shadow-sm">
-      <div className="p-12 py-2">
-        <div className="flex justify-between items-center ">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <BiTrendingUp className="w-5 h-5 text-white" />
-          </div>
+    <header className="flex max-sm:flex-row items-center justify-between min-md:px-16 max-sm:px-4 py-8 w-full">
+      <div className="flex justify-between items-center ">
+        <Logo showText={!user} />
 
-          <nav className="flex border-b border-gray-200">
+        {user && (
+          <nav className="flex border-b border-gray-200 ml-8 max-sm:ml-6">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.key;
@@ -48,7 +54,7 @@ export function Header() {
                 <button
                   key={tab.key}
                   className={`
-                  relative flex items-center gap-1 px-4 py-2 -mb-px font-medium transition-colors
+                  relative flex items-center gap-1 max-sm:px-2 px-4 py-2 -mb-px font-medium transition-colors max-sm:text-xs
                   ${
                     isActive
                       ? "text-blue-600 border-b-2 border-blue-600"
@@ -63,13 +69,28 @@ export function Header() {
               );
             })}
           </nav>
-
-          <Button variant="secondary" onClick={handleLogout}>
-            <BiLogOut />
-            Sair
-          </Button>
-        </div>
+        )}
       </div>
+
+      {user ? (
+        <Button
+          variant="secondary"
+          onClick={handleLogout}
+          className="max-sm:text-xs"
+        >
+          <BiLogOut />
+          Sair
+        </Button>
+      ) : (
+        <div className="flex items-center gap-4 max-sm:gap-2">
+          <Link href="/Login">
+            <Button variant="secondary">Entrar</Button>
+          </Link>
+          <Link href="/Cadastro">
+            <Button>Criar Conta</Button>
+          </Link>
+        </div>
+      )}
     </header>
   );
 }

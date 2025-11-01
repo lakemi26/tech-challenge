@@ -5,7 +5,6 @@ import { FiTrendingUp } from "react-icons/fi";
 type Props = {
   showText?: boolean;
   name?: string;
-  href?: string;
   className?: string;
   iconSize?: number;
   textColor?: string;
@@ -14,14 +13,12 @@ type Props = {
 export default function Logo({
   showText = true,
   name = "FinanceApp",
-  href = "/",
   className = "",
   iconSize = 18,
   textColor = "black",
 }: Props) {
   return (
-    <a
-      href={href}
+    <div
       aria-label={name}
       className={`inline-flex items-center gap-3 ${className}`}
     >
@@ -31,12 +28,12 @@ export default function Logo({
 
       {showText && (
         <span
-          className={`text-xl font-semibold text-slate-900`}
+          className={`text-xl max-sm:text-lg font-semibold text-slate-900`}
           style={{ color: textColor }}
         >
           {name}
         </span>
       )}
-    </a>
+    </div>
   );
 }
