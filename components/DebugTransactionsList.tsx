@@ -6,7 +6,7 @@ import {
   onTransationsByMonth,
   deleteTransaction,
 } from "@/services/transactions";
-import RowActionButtons from "./RowActionButtons";
+
 import Modal, { ModalHandle } from "./Modal";
 import TransactionForm from "./TransactionForm";
 
@@ -52,6 +52,7 @@ export default function DebugTransactionsList({ year, month1to12 }: Props) {
   }
 
   async function handleDelete(t: Transaction) {
+    editRef.current?.close();
     await deleteTransaction(t.id);
   }
 

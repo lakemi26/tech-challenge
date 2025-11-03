@@ -5,15 +5,7 @@ import { Transaction } from "@/services/transactions";
 import Modal, { ModalHandle } from "./Modal";
 import ConfirmDeleteModal, { ConfirmDeleteHandle } from "./ConfirmDeleteModal";
 import Button from "./Button";
-import {
-  FiTrendingUp,
-  FiFileText,
-  FiCalendar,
-  FiTag,
-  FiHash,
-  FiEdit2,
-  FiTrash2,
-} from "react-icons/fi";
+import { FiFileText, FiCalendar, FiTag, FiHash } from "react-icons/fi";
 
 export interface TransactionDetailsHandle {
   open: (tx: Transaction) => void;
@@ -23,6 +15,7 @@ export interface TransactionDetailsHandle {
 type Props = {
   onEdit?: (tx: Transaction) => void;
   onDelete?: (tx: Transaction) => void | Promise<void>;
+  onClose?: () => void;
 };
 
 const nfBRL = new Intl.NumberFormat("pt-BR", {
@@ -62,12 +55,8 @@ const TransactionDetailsModal = forwardRef<TransactionDetailsHandle, Props>(
       if (tx) onEdit?.(tx);
     }
 
-    function handleDelete() {
-      if (!tx) return;
-      confirmRef.current?.open({
-        label: tx.description,
-        onConfirm: () => onDelete?.(tx),
-      });
+    function handleClose() {
+      modalRef.current?.close();
     }
 
     return (
@@ -155,19 +144,8 @@ const TransactionDetailsModal = forwardRef<TransactionDetailsHandle, Props>(
             </div>
 
             <div className="flex items-center justify-between gap-3">
-              <Button
-                variant="secondary"
-                onClick={handleEdit}
-                icon={<FiEdit2 />}
-              >
-                Editar
-              </Button>
-              <Button
-                onClick={handleDelete}
-                className="bg-rose-600 text-white hover:opacity-90"
-                icon={<FiTrash2 />}
-              >
-                Excluir
+              <Button variant="secondary" onClick={handleClose}>
+                Fechar
               </Button>
             </div>
           </div>
