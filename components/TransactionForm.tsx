@@ -7,9 +7,13 @@ import {
   TransactionType,
   updateTransaction,
 } from "@/services/transactions";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FormField from "./FormField";
 import Button from "./Button";
+
+import { useForm, Controller, useWatch } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type Props = {
   initial?: Transaction | null;
@@ -49,32 +53,146 @@ function parseBRLToNumber(masked: string) {
   return Number.isFinite(n) ? n : NaN;
 }
 
+function getTodayLocalISODate() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+const DESCRIPTION_MAX = 140;
+
+const TYPE_VALUES = ["deposito", "saque", "transferencia"] as const;
+const CATEGORY_VALUES = [
+  "salario",
+  "moradia",
+  "alimentacao",
+  "saude",
+  "investimento",
+  "utilidades",
+] as const;
+
+const transactionSchema = z
+  .object({
+    type: z.enum(TYPE_VALUES, { message: "Selecione o tipo de transação." }),
+    category: z.enum(CATEGORY_VALUES, { message: "Selecione uma categoria." }),
+
+    valueMasked: z
+      .string()
+      .min(1, "Informe um valor.")
+      .refine((v) => {
+        const value = parseBRLToNumber(v);
+        return Number.isFinite(value) && value > 0;
+      }, "Informe um valor válido maior que zero."),
+
+    description: z
+      .string()
+      .max(DESCRIPTION_MAX, `Descrição muito longa (máx. ${DESCRIPTION_MAX}).`)
+      .optional(),
+
+    dateStr: z
+      .string()
+      .min(1, "Informe a data.")
+      .refine((s) => !Number.isNaN(new Date(s).getTime()), "Data inválida.")
+      .refine(
+        (s) => s <= getTodayLocalISODate(),
+        "A data não pode ser futura."
+      ),
+  })
+  .superRefine((data, ctx) => {
+    const isOutflow = data.type === "saque" || data.type === "transferencia";
+    if (isOutflow && data.category === "salario") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Saque/Transferência não pode ser categorizado como Salário.",
+        path: ["category"],
+      });
+    }
+  });
+
+type TransactionFormData = z.infer<typeof transactionSchema>;
+
 export default function TransactionForm({ initial, onSaved, onCancel }: Props) {
   const isEdit = !!initial;
 
-  const [type, setType] = useState<TransactionType | "">("");
-  const [category, setCategory] = useState<TransactionCategory | "">("");
-  const [description, setDescription] = useState("");
-  const [dateStr, setDateStr] = useState<string>(() =>
-    new Date().toISOString().slice(0, 10)
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<TransactionFormData>({
+    resolver: zodResolver(transactionSchema),
+    mode: "onSubmit",
+    defaultValues: {
+      type: "deposito",
+      category: "salario",
+      description: "",
+      dateStr: getTodayLocalISODate(),
+      valueMasked: "0,00",
+    },
+  });
+
+  const watchedType = useWatch({ control, name: "type" });
+  const watchedCategory = useWatch({ control, name: "category" });
+  const watchedDescription = useWatch({ control, name: "description" });
+  const watchedValueMasked = useWatch({ control, name: "valueMasked" });
+
+  const isOutflow = watchedType === "saque" || watchedType === "transferencia";
+
+  const valueSign = watchedType === "deposito" ? "+" : "-";
+
+  const valueBadge = (
+    <span
+      className={`inline-flex h-6 w-6 items-center justify-center rounded-md text-xs font-bold ${
+        watchedType === "deposito"
+          ? "bg-green-100 text-green-700"
+          : "bg-red-100 text-red-700"
+      }`}
+      aria-hidden="true"
+    >
+      {valueSign}
+    </span>
   );
 
-  const [valueMasked, setValueMasked] = useState("0,00");
-
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const valueHelper =
+    watchedType === "deposito"
+      ? undefined
+      : "Para saque/transferência, o valor será registrado como negativo.";
 
   useEffect(() => {
     if (initial) {
-      setType(initial.type);
-      setCategory(initial.category);
-      setDescription(initial.description || "");
-      setDateStr(initial.date.toISOString().slice(0, 10));
-      setValueMasked(nfBRL.format(initial.value));
+      const absMasked = nfBRL.format(Math.abs(initial.value));
+
+      reset({
+        type: initial.type,
+        category: initial.category,
+        description: initial.description || "",
+        dateStr: initial.date.toISOString().slice(0, 10),
+        valueMasked: absMasked,
+      });
+      setServerError(null);
     } else {
-      resetForm();
+      reset({
+        type: "deposito",
+        category: "salario",
+        description: "",
+        dateStr: getTodayLocalISODate(),
+        valueMasked: "0,00",
+      });
+      setServerError(null);
     }
-  }, [initial]);
+  }, [initial, reset]);
+
+  useEffect(() => {
+    if (isOutflow && watchedCategory === "salario") {
+      setValue("category", "moradia", { shouldValidate: true });
+    }
+  }, [isOutflow, watchedCategory, setValue]);
 
   const heading = useMemo(
     () => (isEdit ? "Editar Transação" : "Nova Transação"),
@@ -83,122 +201,120 @@ export default function TransactionForm({ initial, onSaved, onCancel }: Props) {
 
   function onChangeValue(e: React.ChangeEvent<HTMLInputElement>) {
     const digits = e.target.value.replace(/\D/g, "");
-    setValueMasked(maskBRLFromDigits(digits));
+    const masked = maskBRLFromDigits(digits);
+    setValue("valueMasked", masked, { shouldValidate: true });
   }
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError(null);
+  const onSubmit = async (data: TransactionFormData) => {
+    setServerError(null);
 
-    if (!type) {
-      setError("Selecione o tipo de transação.");
-      return;
-    }
-    if (!category) {
-      setError("Selecione uma categoria.");
-      return;
-    }
-
-    const value = parseBRLToNumber(valueMasked);
-    if (!Number.isFinite(value) || value <= 0) {
-      setError("Informe um valor válido maior que zero.");
-      return;
-    }
-
-    setSubmitting(true);
     try {
-      const typeSafe = type as TransactionType;
-      const categorySafe = category as TransactionCategory;
+      const parsed = parseBRLToNumber(data.valueMasked);
+
+      const isOutflowSubmit =
+        data.type === "saque" || data.type === "transferencia";
+      const value = isOutflowSubmit ? -Math.abs(parsed) : Math.abs(parsed);
 
       if (isEdit && initial) {
         await updateTransaction(initial.id, {
-          type,
-          category,
-          description,
+          type: data.type,
+          category: data.category,
+          description: data.description || "",
           value,
-          date: new Date(dateStr),
+          date: new Date(data.dateStr),
         });
       } else {
         await addTransaction({
-          type,
-          category,
-          description,
+          type: data.type,
+          category: data.category,
+          description: data.description || "",
           value,
-          date: new Date(dateStr),
+          date: new Date(data.dateStr),
         });
       }
-      onSaved?.();
-    } catch (err: any) {
-      setError(err?.message ?? "Não foi possível salvar a transação.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
 
-  function resetForm() {
-    setType("");
-    setCategory("");
-    setDescription("");
-    setDateStr(new Date().toISOString().slice(0, 10));
-    setValueMasked("0,00");
-    setError(null);
-    setSubmitting(false);
-  }
+      onSaved?.();
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Não foi possível salvar a transação.";
+      setServerError(message);
+    }
+  };
+
+  const descLen = (watchedDescription ?? "").length;
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <h3 className="sr-only">{heading}</h3>
 
       <div className="grid gap-4">
-        <FormField
-          as="select"
-          label="Tipo de transação"
-          value={type}
-          onChange={(e) => setType(e.target.value as TransactionType)}
-          options={[
-            { value: "", label: "Selecione o tipo" } as any,
-            ...TYPE_OPTIONS,
-          ]}
+        <Controller
+          control={control}
+          name="type"
+          render={({ field }) => (
+            <FormField
+              as="select"
+              label="Tipo de transação"
+              options={TYPE_OPTIONS}
+              error={errors.type?.message}
+              value={field.value}
+              onChange={(e) =>
+                field.onChange(e.target.value as TransactionType)
+              }
+            />
+          )}
         />
 
         <FormField
           label="Valor (R$)"
           placeholder="0,00"
-          value={valueMasked}
-          onChange={onChangeValue}
           inputMode="numeric"
+          error={errors.valueMasked?.message}
+          helperText={valueHelper}
+          startAdornment={valueBadge}
+          {...register("valueMasked")}
+          onChange={onChangeValue}
+          value={watchedValueMasked ?? ""}
         />
 
         <FormField
           as="textarea"
           label="Descrição"
           placeholder="Descreva a transação..."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          error={errors.description?.message}
+          helperText={`${descLen}/${DESCRIPTION_MAX}`}
+          {...register("description")}
         />
 
-        <FormField
-          as="select"
-          label="Categoria"
-          value={category}
-          onChange={(e) =>
-            setCategory(e.target.value as TransactionCategory | "")
-          }
-          options={[
-            { value: "", label: "Selecione uma categoria" } as any,
-            ...CATEGORY_OPTIONS,
-          ]}
+        <Controller
+          control={control}
+          name="category"
+          render={({ field }) => (
+            <FormField
+              as="select"
+              label="Categoria"
+              options={CATEGORY_OPTIONS}
+              error={errors.category?.message}
+              value={field.value}
+              onChange={(e) =>
+                field.onChange(e.target.value as TransactionCategory)
+              }
+            />
+          )}
         />
 
         <FormField
           label="Data"
           type="date"
-          value={dateStr}
-          onChange={(e) => setDateStr(e.target.value)}
+          error={errors.dateStr?.message}
+          max={getTodayLocalISODate()}
+          {...register("dateStr")}
         />
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {serverError && <p className="text-sm text-red-600">{serverError}</p>}
 
       <div className="mt-2 flex items-center justify-between gap-3">
         <Button type="button" variant="secondary" onClick={onCancel}>
@@ -208,10 +324,10 @@ export default function TransactionForm({ initial, onSaved, onCancel }: Props) {
         <Button
           type="submit"
           variant="primary"
-          disabled={submitting}
-          aria-busy={submitting}
+          disabled={isSubmitting}
+          aria-busy={isSubmitting}
         >
-          {submitting
+          {isSubmitting
             ? isEdit
               ? "Atualizando..."
               : "Adicionando ..."

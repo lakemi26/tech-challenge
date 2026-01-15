@@ -2,7 +2,7 @@
 
 import { BiDollar, BiTrendingDown, BiTrendingUp } from "react-icons/bi";
 import { onTransationsByMonth, Transaction } from "@/services/transactions";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("pt-BR", {
@@ -18,7 +18,7 @@ type CardProps = {
 };
 
 type BalanceCardProps = {
-  isTransaction?: Boolean;
+  isTransaction?: boolean;
 };
 
 export default function BalanceCard({
@@ -35,36 +35,38 @@ export default function BalanceCard({
     return () => unsub();
   }, [y, m]);
 
-  useEffect(() => {
-    console.log("transactions: ", transactions);
-  }, [transactions]);
+  const isIncome = (t: Transaction) => t.type === "deposito";
+  const isOutflow = (t: Transaction) =>
+    t.type === "saque" || t.type === "transferencia";
 
-  const deposits = transactions.filter((t) => t.type === "deposito");
-  const withdrawals = transactions.filter((t) => t.type === "saque");
+  const deposits = useMemo(() => transactions.filter(isIncome), [transactions]);
+  const outflows = useMemo(
+    () => transactions.filter(isOutflow),
+    [transactions]
+  );
 
-  const totalDeposits = deposits.reduce((sum, t) => sum + t.value, 0);
-  const totalWithdrawals = withdrawals.reduce((sum, t) => sum + t.value, 0);
-  const balance = totalDeposits - totalWithdrawals;
+  const balance = useMemo(
+    () => transactions.reduce((sum, t) => sum + t.value, 0),
+    [transactions]
+  );
 
-  const currentMonth = new Date().getMonth();
-  const monthlyIncome = deposits
-    .filter((t) => new Date(t.date).getMonth() === currentMonth)
-    .reduce((sum, t) => sum + t.value, 0);
+  const monthlyIncome = useMemo(
+    () => deposits.reduce((sum, t) => sum + Math.abs(t.value), 0),
+    [deposits]
+  );
 
-  const totalIncome = deposits.reduce((sum, t) => sum + t.value, 0);
+  const monthlyExpenses = useMemo(
+    () => outflows.reduce((sum, t) => sum + Math.abs(t.value), 0),
+    [outflows]
+  );
 
-  const monthlyExpenses = withdrawals
-    .filter((t) => new Date(t.date).getMonth() === currentMonth)
-    .reduce((sum, t) => sum + t.value, 0);
-
-  const totalExpenses = withdrawals.reduce((sum, t) => sum + t.value, 0);
+  const totalIncome = monthlyIncome;
+  const totalExpenses = monthlyExpenses;
 
   function Card({ amount, type }: CardProps) {
-    const getCaption = (filterType: "deposito" | "saque") => {
-      const count = transactions.filter(
-        (t) =>
-          t.type === filterType &&
-          new Date(t.date).getMonth() === new Date().getMonth()
+    const getCaption = (mode: "income" | "outflow") => {
+      const count = transactions.filter((t) =>
+        mode === "income" ? isIncome(t) : isOutflow(t)
       ).length;
       return count === 1 ? "1 transação" : `${count} transações`;
     };
@@ -81,15 +83,15 @@ export default function BalanceCard({
         bg: "bg-green-100",
         text: "text-green-600",
         icon: BiTrendingUp,
-        title: isTransaction ? "Total de Depósitos" : "Entradas do mês",
-        caption: getCaption("deposito"),
+        title: isTransaction ? "Total de Entradas" : "Entradas do mês",
+        caption: getCaption("income"),
       },
       monthlyExpenses: {
         bg: "bg-red-100",
         text: "text-red-500",
         icon: BiTrendingDown,
-        title: isTransaction ? "Total de Saques" : "Saídas do mês",
-        caption: getCaption("saque"),
+        title: isTransaction ? "Total de Saídas" : "Saídas do mês",
+        caption: getCaption("outflow"),
       },
     };
 

@@ -10,37 +10,52 @@ import AuthCard from "@/components/AuthCard";
 import InfoAlert from "@/components/InfoAlert";
 import { authErrorMessage, loginUser } from "@/services/auth";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const loginSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, "Informe seu e-mail.")
+    .email("Informe um e-mail válido"),
+  password: z.string().min(1, "Informe sua senha.").min(6, "Senha inválida."),
+});
+
+type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next") ?? "/Inicio";
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-    if (!email.trim()) return setError("Informe um e-mail válido");
-    if (!password) return setError("Informe sua senha.");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    mode: "onBlur",
+  });
 
-    setSubmitting(true);
+  async function onSubmit(data: LoginForm) {
+    setServerError(null);
+
     try {
-      await loginUser({ email: email.trim(), password });
+      await loginUser({ email: data.email, password: data.password });
       router.push(next);
     } catch (err: unknown) {
-      setError(authErrorMessage(err));
-    } finally {
-      setSubmitting(false);
+      setServerError(authErrorMessage(err));
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-16">
+    <div className="min-h-screen bg-linear-to-b from-slate-50 to-white py-16">
       <header className="mx-auto y-16 flex max-w-md flex-col items-center gap-3 px-4 py-8">
         <Logo />
         <Link
@@ -68,14 +83,14 @@ export default function LoginPage() {
             </>
           }
         >
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               label="E-mail"
               placeholder="seu@email.com"
               type="email"
               autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              error={errors.email?.message}
+              {...register("email")}
               required
             />
 
@@ -85,8 +100,8 @@ export default function LoginPage() {
                 placeholder="Sua senha"
                 type="password"
                 autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                error={errors.password?.message}
+                {...register("password")}
                 required
               />
               <div className="text-right">
@@ -99,16 +114,18 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {serverError && (
+              <p className="text-sm text-red-600">{serverError}</p>
+            )}
 
             <Button
               type="submit"
               variant="primary"
               className="w-full"
-              disabled={submitting}
-              aria-busy={submitting}
+              disabled={isSubmitting}
+              aria-busy={isSubmitting}
             >
-              {submitting ? "Entrando..." : "Entrar"}
+              {isSubmitting ? "Entrando..." : "Entrar"}
             </Button>
           </form>
         </AuthCard>

@@ -10,54 +10,75 @@ import Button from "@/components/Button";
 import FormField from "@/components/FormField";
 import { registerUser } from "@/services/auth";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const cadastroSchema = z
+  .object({
+    fullName: z
+      .string()
+      .trim()
+      .min(1, "Informe seu nome completo")
+      .min(8, "Informe seu nome completo."),
+    email: z
+      .string()
+      .trim()
+      .min(1, "Informe um e-mail válido.")
+      .email("Informe um e-mail válido"),
+    password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
+    confirm: z.string().min(1, "Confirme sua senha."),
+    accepted: z.boolean().refine((v) => v === true),
+  })
+
+  .refine((data) => data.password === data.confirm, {
+    message: "As senhas devem ser iguais.",
+    path: ["confirm"],
+  });
+
+type CadastroForm = z.infer<typeof cadastroSchema>;
 
 export default function CadastroPage() {
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next") ?? "/Inicio";
 
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [accepted, setAccepted] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<CadastroForm>({
+    resolver: zodResolver(cadastroSchema),
+    mode: "onBlur",
+    defaultValues: {
+      fullName: "",
+      email: "",
+      password: "",
+      confirm: "",
+      accepted: false,
+    },
+  });
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError(null);
+  const onSubmit = async (data: CadastroForm) => {
+    setServerError(null);
 
-    if (!fullName.trim()) return setError("Informe seu nome completo.");
-    if (!email.trim()) return setError("Informe um e-mail válido.");
-    if (password.length < 6)
-      return setError("A senha deve ter pelo menos 6 caracteres.");
-    if (password !== confirm) return setError("As senhas não conferem.");
-    if (!accepted)
-      return setError(
-        "É necessário aceitar os Termos de Uso e a Política de Privacidade."
-      );
-
-    setSubmitting(true);
     try {
       await registerUser({
-        fullName: fullName.trim(),
-        email: email.trim(),
-        password,
+        fullName: data.fullName.trim(),
+        email: data.email.trim(),
+        password: data.password,
       });
       router.push(next);
     } catch (err: unknown) {
       const message =
-        err instanceof Error
-          ? err.message
-          : "Não foi possível criar sua conta.";
-      setError(message);
-    } finally {
-      setSubmitting(false);
+        err instanceof Error ? err.message : "Não foi possível criar sua conta";
+      setServerError(message);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-16">
@@ -88,55 +109,54 @@ export default function CadastroPage() {
             </>
           }
         >
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               label="Nome completo"
               placeholder="Seu nome completo"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
               type="text"
               autoComplete="name"
               required
+              error={errors.fullName?.message}
+              {...register("fullName")}
             />
 
             <FormField
               label="E-mail"
               placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               type="email"
               autoComplete="email"
               required
+              error={errors.email?.message}
+              {...register("email")}
             />
 
             <FormField
               label="Senha"
               placeholder="Crie uma senha segura"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               type="password"
               autoComplete="new-password"
               minLength={6}
               required
+              error={errors.password?.message}
+              {...register("password")}
             />
 
             <FormField
               label="Confirmar senha"
               placeholder="Confirme sua senha"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
               type="password"
               autoComplete="new-password"
               minLength={6}
               required
+              error={errors.confirm?.message}
+              {...register("confirm")}
             />
 
             <label className="flex cursor-pointer items-start gap-3 text-sm text-slate-700">
               <input
                 type="checkbox"
                 className="mt-1"
-                checked={accepted}
-                onChange={(e) => setAccepted(e.target.checked)}
+                {...register("accepted")}
               />
               <span>
                 Aceito os{" "}
@@ -150,16 +170,18 @@ export default function CadastroPage() {
               </span>
             </label>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {serverError && (
+              <p className="text-sm text-red-600">{serverError}</p>
+            )}
 
             <Button
               type="submit"
               variant="primary"
               className="w-full"
-              disabled={submitting}
-              aria-busy={submitting}
+              disabled={isSubmitting}
+              aria-busy={isSubmitting}
             >
-              {submitting ? "Criando conta..." : "Criar Conta"}
+              {isSubmitting ? "Criando conta..." : "Criar Conta"}
             </Button>
           </form>
         </AuthCard>

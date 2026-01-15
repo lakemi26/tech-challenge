@@ -1,5 +1,4 @@
 import BalanceCard from "@/components/BalanceCard";
-import { Header } from "@/components/Header";
 
 import NewTransactionSection from "@/components/NewTransactionSection";
 import PageHeading from "@/components/PageHeading";
@@ -17,7 +16,7 @@ export default function Transacoes() {
           />
           <NewTransactionSection showButton />
         </header>
-        
+
         <BalanceCard isTransaction />
         <TransactionsTable />
       </div>
