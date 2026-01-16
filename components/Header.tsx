@@ -1,6 +1,6 @@
 "use client";
 
-import { BiHome, BiLogOut, BiTrendingUp } from "react-icons/bi";
+import { BiHome, BiLogOut, BiTrendingUp, BiBarChartAlt2 } from "react-icons/bi";
 import Button from "./Button";
 import { logoutUser } from "@/services/auth";
 import { usePathname, useRouter } from "next/navigation";
@@ -35,12 +35,18 @@ export function Header() {
       icon: BiTrendingUp,
       href: "/Transacoes",
     },
+    {
+      key: "Analises",
+      label: "Análises",
+      icon: BiBarChartAlt2,
+      href: "/Analises",
+    },
   ];
   const activeTab =
     tabs.find((tab) => pathname.startsWith(tab.href))?.key || "inicio";
 
   return (
-    <header className="flex max-sm:flex-row items-center justify-between min-md:px-16 max-sm:px-4 py-8 w-full">
+    <header className="flex max-sm:flex-row items-center justify-between md:px-16 max-sm:px-4 py-8 w-full">
       <div className="flex justify-between items-center ">
         <Logo showText={!user} />
 

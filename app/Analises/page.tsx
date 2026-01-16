@@ -1,3 +1,4 @@
+import BalanceCard from "@/components/BalanceCard";
 import PageHeading from "@/components/PageHeading";
 
 export default function AnalisesPage() {
@@ -9,6 +10,7 @@ export default function AnalisesPage() {
           subtitle="Mais informações sobre as suas finanças"
         />
       </header>
+      <BalanceCard />
     </div>
   );
 }

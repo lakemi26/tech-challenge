@@ -71,13 +71,15 @@ export default function BalanceCard({
       return count === 1 ? "1 transação" : `${count} transações`;
     };
 
+    const isNegativeBalance = type === "balance" && amount < 0;
+
     const colorsByType = {
       balance: {
-        bg: "bg-blue-100",
-        text: "text-blue-500",
+        bg: isNegativeBalance ? "bg-red-100" : "bg-blue-100",
+        text: isNegativeBalance ? "text-red-600" : "text-blue-500",
         icon: BiDollar,
         title: isTransaction ? "Saldo Total" : "Saldo Atual",
-        caption: "Conta corrente",
+        caption: isNegativeBalance ? "Em débito" : "Conta corrente",
       },
       monthlyIncome: {
         bg: "bg-green-100",
@@ -109,12 +111,26 @@ export default function BalanceCard({
           )}
         </div>
 
-        <div className={`text-2xl font-bold ${type !== "balance" ? text : ""}`}>
-          {formatCurrency(amount)}
+        <div className="flex items-center gap-2">
+          <span className={`text-2xl font-bold ${text}`}>
+            {formatCurrency(amount)}
+          </span>
+
+          {isNegativeBalance && (
+            <span className="rounded-md bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600">
+              ⚠️ Em débito
+            </span>
+          )}
         </div>
 
         {!isTransaction && (
-          <p className="text-xs text-gray-500 opacity-80 mt-2">{caption}</p>
+          <p
+            className={`text-xs opacity-80 mt-2 ${
+              isNegativeBalance ? "text-red-600" : "text-gray-500"
+            }`}
+          >
+            {caption}
+          </p>
         )}
       </section>
     );
