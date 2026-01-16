@@ -2,11 +2,11 @@
 
 import {
   deleteTransaction,
-  onAllTransactions,
+  onTransationsByMonth,
   Transaction,
 } from "@/services/transactions";
 import { Card } from "./Card";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { RiArrowRightDownLine, RiArrowRightUpLine } from "react-icons/ri";
 import Modal, { ModalHandle } from "./Modal";
 import TransactionDetailsModal, {
@@ -15,16 +15,25 @@ import TransactionDetailsModal, {
 import RowActionButtons from "./RowActionButtons";
 import TransactionForm from "./TransactionForm";
 
+import { useAppSelector } from "@/store/hooks";
+
 export function TransactionsTable() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [editing, setEditing] = useState<Transaction | null>(null);
 
   const editRef = useRef<ModalHandle>(null);
   const detailsRef = useRef<TransactionDetailsHandle>(null);
+
+  const { period, type, category, search } = useAppSelector((s) => s.filters);
+
   useEffect(() => {
-    const unsub = onAllTransactions(setTransactions);
+    const unsub = onTransationsByMonth(
+      period.year,
+      period.month,
+      setTransactions
+    );
     return () => unsub();
-  }, []);
+  }, [period.year, period.month]);
 
   function openView(t: Transaction) {
     detailsRef.current?.open(t);
@@ -48,6 +57,25 @@ export function TransactionsTable() {
     style: "currency",
     currency: "BRL",
   });
+
+  const isIncome = (t: Transaction) => t.type === "deposito";
+  const isOutflow = (t: Transaction) =>
+    t.type === "saque" || t.type === "transferencia";
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+
+    return transactions.filter((t) => {
+      const okType = type === "all" ? true : t.type === type;
+      const okCat = category === "all" ? true : t.category === category;
+
+      const okSearch = !q
+        ? true
+        : (t.description ?? "").toLowerCase().includes(q);
+
+      return okType && okCat && okSearch;
+    });
+  }, [transactions, type, category, search]);
 
   type TransactionRowProp = {
     t: Transaction;
@@ -111,7 +139,7 @@ export function TransactionsTable() {
   return (
     <>
       <Card title={`Lista de Transações`} className="mt-5">
-        {transactions.length === 0 ? (
+        {filtered.length === 0 ? (
           <p>(sem transações)</p>
         ) : (
           <div className="overflow-x-auto">
@@ -134,8 +162,9 @@ export function TransactionsTable() {
                   ))}
                 </tr>
               </thead>
+
               <tbody>
-                {transactions.map((t) => {
+                {filtered.map((t) => {
                   const textColor =
                     t.type === "saque"
                       ? "text-red-500"
@@ -162,23 +191,26 @@ export function TransactionsTable() {
                                     />
                                   )}
                                   <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
-                                    {t?.category}
+                                    {t?.type}
                                   </span>
                                 </div>
                               </td>
                             );
+
                           case "description":
                             return (
                               <td key={col.key} className="px-4 py-2">
                                 {t.description}
                               </td>
                             );
+
                           case "category":
                             return (
                               <td key={col.key} className="px-4 py-2">
                                 {t.category}
                               </td>
                             );
+
                           case "date":
                             return (
                               <td key={col.key} className="px-4 py-2">
@@ -188,16 +220,18 @@ export function TransactionsTable() {
                                 })}
                               </td>
                             );
+
                           case "value":
                             return (
                               <td
                                 key={col.key}
                                 className={`px-4 py-2 text-right ${textColor}`}
                               >
-                                {t.type === "deposito" ? "+ " : "- "}
-                                {nfBRL.format(t.value)}
+                                {isIncome(t) ? "+ " : "- "}
+                                {nfBRL.format(Math.abs(t.value))}
                               </td>
                             );
+
                           case "actions":
                             return (
                               <td
@@ -212,6 +246,7 @@ export function TransactionsTable() {
                                 />
                               </td>
                             );
+
                           default:
                             return <td key={col.key}></td>;
                         }
