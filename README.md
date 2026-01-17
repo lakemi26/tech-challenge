@@ -1,4 +1,4 @@
-# 💰 FinanceApp - Sistema de Gestão Financeira Pessoal
+# FinanceApp - Sistema de Gestão Financeira Pessoal
 
 Aplicação web desenvolvida para o controle e análise de finanças pessoais, permitindo o registro de transações, visualização de saldo, filtros avançados e análises financeiras com gráficos interativos.
 
@@ -8,14 +8,14 @@ O projeto foi desenvolvido como parte de um trabalho acadêmico, aplicando boas 
 
 ## 📌 Funcionalidades Principais
 
-### 🔐 Autenticação
+### Autenticação
 
 - Cadastro de usuário
 - Login e logout
 - Recuperação de senha
 - Autenticação via Firebase Authentication
 
-### 💳 Transações
+### Transações
 
 - Cadastro de transações financeiras
   - Depósito
@@ -25,7 +25,7 @@ O projeto foi desenvolvido como parte de um trabalho acadêmico, aplicando boas 
 - Validação avançada de dados (regras de negócio)
 - Atualização em tempo real sem recarregar a página
 
-### 🔎 Filtros e Pesquisa
+### Filtros e Pesquisa
 
 - Filtro por:
   - Mês
@@ -35,7 +35,7 @@ O projeto foi desenvolvido como parte de um trabalho acadêmico, aplicando boas 
 - Busca textual por descrição
 - Filtros centralizados e gerenciados via Redux
 
-### 📊 Análises Financeiras
+### Análises Financeiras
 
 - Saldo atual
 - Total de entradas e saídas do período
@@ -45,7 +45,7 @@ O projeto foi desenvolvido como parte de um trabalho acadêmico, aplicando boas 
   - Entradas vs saídas ao longo do tempo
 - Insights automáticos baseados no período selecionado
 
-### 📄 Listagem de Transações
+### Listagem de Transações
 
 - Paginação dentro do container
 - Ordenação por data
@@ -54,7 +54,7 @@ O projeto foi desenvolvido como parte de um trabalho acadêmico, aplicando boas 
 
 ---
 
-## 🧠 Gestão de Estado
+## Gestão de Estado
 
 A aplicação utiliza **Redux Toolkit** para gerenciar estados globais, como:
 
@@ -70,7 +70,7 @@ Isso garante:
 
 ---
 
-## ✅ Validações Avançadas
+## Validações Avançadas
 
 As validações são feitas com **Zod**, garantindo:
 
@@ -102,7 +102,7 @@ As validações são feitas com **Zod**, garantindo:
 
 ---
 
-## 🚀 Renderização e Performance
+## Renderização e Performance
 
 - Utilização de **SSR (Server-Side Rendering)** e **renderização dinâmica** quando necessário
 - Otimização de performance e carregamento
@@ -110,7 +110,7 @@ As validações são feitas com **Zod**, garantindo:
 
 ---
 
-## 📱 Responsividade e UX
+## Responsividade e UX
 
 - Layout responsivo para desktop e dispositivos móveis
 - Componentes reutilizáveis
@@ -142,5 +142,3 @@ Ele pode ser facilmente expandido com novas funcionalidades, como:
 - Alertas financeiros inteligentes
 
 ---
-
-💙 Desenvolvido com dedicação e atenção aos detalhes.
