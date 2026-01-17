@@ -15,17 +15,17 @@ import type {
   TransactionType,
 } from "@/services/transactions";
 
-const TYPE_OPTIONS: { value: TransactionType | "all"; label: string }[] = [
+type FilterType = TransactionType | "all";
+type FilterCategory = TransactionCategory | "all";
+
+const TYPE_OPTIONS: { value: FilterType; label: string }[] = [
   { value: "all", label: "Todos os tipos" },
   { value: "deposito", label: "Depósito" },
   { value: "saque", label: "Saque" },
   { value: "transferencia", label: "Transferência" },
 ];
 
-const CATEGORY_OPTIONS: {
-  value: TransactionCategory | "all";
-  label: string;
-}[] = [
+const CATEGORY_OPTIONS: { value: FilterCategory; label: string }[] = [
   { value: "all", label: "Todas as categorias" },
   { value: "salario", label: "Salário" },
   { value: "moradia", label: "Moradia" },
@@ -76,7 +76,10 @@ export default function TransactionsFilters() {
           value={String(period.month)}
           onChange={(e) =>
             dispatch(
-              setPeriod({ year: period.year, month: Number(e.target.value) })
+              setPeriod({
+                year: period.year,
+                month: Number(e.target.value),
+              })
             )
           }
           options={monthOptions}
@@ -88,7 +91,10 @@ export default function TransactionsFilters() {
           value={String(period.year)}
           onChange={(e) =>
             dispatch(
-              setPeriod({ year: Number(e.target.value), month: period.month })
+              setPeriod({
+                year: Number(e.target.value),
+                month: period.month,
+              })
             )
           }
           options={yearOptions}
@@ -98,16 +104,18 @@ export default function TransactionsFilters() {
           as="select"
           label="Tipo"
           value={type}
-          onChange={(e) => dispatch(setType(e.target.value as any))}
-          options={TYPE_OPTIONS as any}
+          onChange={(e) => dispatch(setType(e.target.value as FilterType))}
+          options={TYPE_OPTIONS}
         />
 
         <FormField
           as="select"
           label="Categoria"
           value={category}
-          onChange={(e) => dispatch(setCategory(e.target.value as any))}
-          options={CATEGORY_OPTIONS as any}
+          onChange={(e) =>
+            dispatch(setCategory(e.target.value as FilterCategory))
+          }
+          options={CATEGORY_OPTIONS}
         />
       </div>
 

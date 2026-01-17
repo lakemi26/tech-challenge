@@ -58,28 +58,27 @@ export async function logoutUser(): Promise<void> {
 }
 
 export function authErrorMessage(err: unknown): string {
-  const code =
-    err instanceof FirebaseError
-      ? err.code
-      : typeof (err as any)?.code === "string"
-      ? (err as any).code
-      : undefined;
-
-  switch (code) {
-    case "auth/invalid-email":
-      return "Email inválido";
-    case "auth/user-disabled":
-      return "Usuário desativado.";
-    case "auth/user-not-found":
-      return "Usuário não encontrado";
-    case "auth/wrong-password":
-    case "auth/invalid-credential":
-      return "Credenciais inválidas. Verifique e tente novamente.";
-    case "auth/too-many-requests":
-      return "Muitas tentativas. Tente novamente mais tarde.";
-    default:
-      return err instanceof Error
-        ? err.message || "Não foi possível entrar. Tente novamente."
-        : "Não foi possível entrar. Tente novamente.";
+  if (err instanceof FirebaseError) {
+    switch (err.code) {
+      case "auth/invalid-email":
+        return "Email inválido";
+      case "auth/user-disabled":
+        return "Usuário desativado.";
+      case "auth/user-not-found":
+        return "Usuário não encontrado";
+      case "auth/wrong-password":
+      case "auth/invalid-credential":
+        return "Credenciais inválidas. Verifique e tente novamente.";
+      case "auth/too-many-requests":
+        return "Muitas tentativas. Tente novamente mais tarde.";
+      default:
+        return "Erro de autenticação. Tente novamente.";
+    }
   }
+
+  if (err instanceof Error) {
+    return err.message || "Não foi possível entrar. Tente novamente.";
+  }
+
+  return "Não foi possível entrar. Tente novamente.";
 }

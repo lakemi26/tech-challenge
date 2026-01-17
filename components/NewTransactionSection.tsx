@@ -8,7 +8,7 @@ import TransactionForm from "./TransactionForm";
 
 type Props = {
   onCreated?: () => void;
-  showButton?: Boolean;
+  showButton?: boolean;
 };
 
 export default function NewTransactionSection({

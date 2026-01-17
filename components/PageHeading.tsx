@@ -29,7 +29,6 @@ export default function PageHeading({
   subtitle,
   name,
   useNameFromAuth = true,
-  className,
 }: Props) {
   const [autoName, setAutoName] = useState<string>("");
 
