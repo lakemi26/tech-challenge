@@ -13,7 +13,7 @@ export default function Footer() {
 
   return (
     <footer
-      className="flex min-md:justify-between max-sm:justify-center max-sm:flex-col items-center max-sm:gap-4 p-8 min-h-[20vh] w-full"
+      className="flex md:justify-between max-sm:justify-center max-sm:flex-col items-center max-sm:gap-4 p-8 min-h-[20vh] w-full"
       style={{ backgroundColor: colors.background.darkBlue }}
     >
       <Logo className="text-white" textColor="white" />

@@ -1,5 +1,5 @@
 import ImageWithFallback from "@/app/public/ImageWithFallback.png";
-import Logo from "@/components/Logo";
+
 import Image from "next/image";
 import { Spacer } from "@/components/Spacer";
 import { Button, Text } from "@/components";
@@ -14,17 +14,16 @@ import {
 import Section from "@/components/Section";
 import Stars from "@/components/Stars";
 import Link from "next/link";
-import { Header } from "@/components/Header";
 
 export default function Home() {
   return (
-    <div className="pt-8 max-sm:w-full max-sm:max-w-screen-lg">
+    <div className="pt-8 max-sm:w-full max-sm:max-w-5xl">
       <Section
         variant="grid"
         minHeight="min-h-screen"
-        className="max-sm:grid-cols-1 min-md:grid-cols-2 w-full min-md:px-16"
+        className="max-sm:grid-cols-1 md:grid-cols-2 w-full md:px-16"
       >
-        <div className="flex flex-col items-start min-md:mb-60 max-sm:px-4">
+        <div className="flex flex-col items-start md:mb-60 max-sm:px-4">
           <Text variant="h1">
             Gerencie suas
             <br />{" "}
@@ -83,8 +82,8 @@ export default function Home() {
           pessoais em uma única plataforma.
         </Text>
 
-        <div className="flex justify-between min-md:gap-8 mt-16 max-sm:flex-col max-sm:gap-16">
-          <div className="flex flex-col items-center text-center min-md:gap-4 max-sm:gap-2">
+        <div className="flex justify-between md:gap-8 mt-16 max-sm:flex-col max-sm:gap-16">
+          <div className="flex flex-col items-center text-center md:gap-4 max-sm:gap-2">
             <FiTrendingUp size={30} color={colors.brand.info} />
             <Text variant="h2">Controle Financeiro Completo</Text>
             <Text color="tertiary">
@@ -94,7 +93,7 @@ export default function Home() {
             </Text>
           </div>
 
-          <div className="flex flex-col items-center text-center min-md:gap-4 max-sm:gap-2">
+          <div className="flex flex-col items-center text-center md:gap-4 max-sm:gap-2">
             <FiBarChart size={30} color={colors.brand.success} />
             <Text variant="h2">Relatórios Detalhados</Text>
             <Text color="tertiary">
@@ -104,7 +103,7 @@ export default function Home() {
             </Text>
           </div>
 
-          <div className="flex flex-col items-center text-center min-md:gap-4 max-sm:gap-2">
+          <div className="flex flex-col items-center text-center md:gap-4 max-sm:gap-2">
             <FiShield size={30} color={colors.brand.secondary} />
             <Text variant="h2">Segurança Total</Text>
             <Text color="tertiary">
@@ -114,7 +113,7 @@ export default function Home() {
             </Text>
           </div>
 
-          <div className="flex flex-col items-center text-center min-md:gap-4 max-sm:gap-2">
+          <div className="flex flex-col items-center text-center md:gap-4 max-sm:gap-2">
             <FiSmartphone size={30} color={colors.brand.danger} />
             <Text variant="h2">Design Responsivo</Text>
             <Text color="tertiary">
@@ -165,7 +164,7 @@ export default function Home() {
           Depoimentos reais de quem transformou sua vida financeira
         </Text>
 
-        <div className="flex min-md:items-center justify-evenly w-full max-sm:flex-col max-sm:gap-8 mt-8">
+        <div className="flex md:items-center justify-evenly w-full max-sm:flex-col max-sm:gap-8 mt-8">
           <div className="flex flex-col gap-3">
             <Stars quantity={5} />
             <Text>
