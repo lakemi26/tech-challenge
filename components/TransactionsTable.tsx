@@ -2,11 +2,12 @@
 
 import {
   deleteTransaction,
-  onTransationsByMonth,
   Transaction,
+  listAllTransactionsPage,
+  type TxCursor,
 } from "@/services/transactions";
 import { Card } from "./Card";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RiArrowRightDownLine, RiArrowRightUpLine } from "react-icons/ri";
 import Modal, { ModalHandle } from "./Modal";
 import TransactionDetailsModal, {
@@ -14,30 +15,32 @@ import TransactionDetailsModal, {
 } from "./TransactionDetailsModal";
 import RowActionButtons from "./RowActionButtons";
 import TransactionForm from "./TransactionForm";
+import Button from "./Button";
 
-import { useAppSelector } from "@/store/hooks";
+const PAGE_SIZE = 20;
 
 export function TransactionsTable() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [editing, setEditing] = useState<Transaction | null>(null);
 
+  const [loading, setLoading] = useState(true);
+  const [nextCursor, setNextCursor] = useState<TxCursor | null>(null);
+  const [pageCursors, setPageCursors] = useState<(TxCursor | null)[]>([null]);
+  const [pageIndex, setPageIndex] = useState(0);
+
   const editRef = useRef<ModalHandle>(null);
   const detailsRef = useRef<TransactionDetailsHandle>(null);
 
-  const { period, type, category, search } = useAppSelector((s) => s.filters);
+  const nfBRL = useMemo(
+    () =>
+      new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }),
+    []
+  );
 
-  useEffect(() => {
-    const unsub = onTransationsByMonth(
-      period.year,
-      period.month,
-      setTransactions
-    );
-    return () => unsub();
-  }, [period.year, period.month]);
-
-  function openView(t: Transaction) {
-    detailsRef.current?.open(t);
-  }
+  const openView = (t: Transaction) => detailsRef.current?.open(t);
 
   function openEdit(t: Transaction) {
     setEditing(t);
@@ -46,105 +49,119 @@ export function TransactionsTable() {
 
   async function handleDelete(t: Transaction) {
     await deleteTransaction(t.id);
+    setTransactions((prev) => prev.filter((x) => x.id !== t.id));
   }
 
-  function handleEditedSaved() {
+  function handleSaved(saved: Transaction) {
     editRef.current?.close();
     setEditing(null);
-  }
 
-  const nfBRL = new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
+    setTransactions((prev) => {
+      const idx = prev.findIndex((t) => t.id === saved.id);
+      if (idx >= 0) {
+        const copy = [...prev];
+        copy[idx] = saved;
+        return copy;
+      }
 
-  const isIncome = (t: Transaction) => t.type === "deposito";
-  const isOutflow = (t: Transaction) =>
-    t.type === "saque" || t.type === "transferencia";
-
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-
-    return transactions.filter((t) => {
-      const okType = type === "all" ? true : t.type === type;
-      const okCat = category === "all" ? true : t.category === category;
-
-      const okSearch = !q
-        ? true
-        : (t.description ?? "").toLowerCase().includes(q);
-
-      return okType && okCat && okSearch;
+      return [saved, ...prev].slice(0, PAGE_SIZE);
     });
-  }, [transactions, type, category, search]);
-
-  type TransactionRowProp = {
-    t: Transaction;
-  };
-
-  function TransactionRow({ t }: TransactionRowProp) {
-    const textColor =
-      t?.type === "saque"
-        ? "text-red-500"
-        : t?.type === "deposito"
-        ? "text-green-600"
-        : "text-blue-500";
-
-    return (
-      <section
-        key={t.id}
-        onClick={() => openView(t)}
-        className="flex justify-between rounded-lg border border-gray-200 bg-white p-5  w-full transition hover:shadow-md mb-3 cursor-pointer"
-      >
-        <div className="flex items-center gap-2.5">
-          {t?.type === "deposito" ? (
-            <RiArrowRightUpLine className={textColor} />
-          ) : (
-            <RiArrowRightDownLine className={textColor} />
-          )}
-
-          <div>
-            <p className="font-semibold">{t?.description}</p>
-            <p className="opacity-60">
-              {t.category} •{" "}
-              {t.date.toLocaleDateString("pt-BR", {
-                day: "2-digit",
-                month: "short",
-              })}
-            </p>
-          </div>
-        </div>
-
-        <div className="text-end">
-          <h2 className={`font-bold ${textColor}`}>{nfBRL.format(t.value)}</h2>
-
-          <div className="mt-1">
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
-              {t?.category}
-            </span>
-          </div>
-        </div>
-      </section>
-    );
   }
 
-  const columns = [
-    { key: "type", label: "Tipo" },
-    { key: "description", label: "Descrição" },
-    { key: "category", label: "Categoria" },
-    { key: "date", label: "Data" },
-    { key: "value", label: "Valor", align: "right" },
-    { key: "actions", label: "Ações", align: "right" },
-  ];
+  const loadPage = useCallback(async (cursor: TxCursor | null) => {
+    setLoading(true);
+    try {
+      const { items, nextCursor } = await listAllTransactionsPage(
+        PAGE_SIZE,
+        cursor ?? undefined
+      );
+
+      setTransactions(items);
+      setNextCursor(nextCursor);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadPage(null);
+  }, [loadPage]);
+
+  async function goNext() {
+    if (!nextCursor) return;
+
+    const newIndex = pageIndex + 1;
+
+    setPageCursors((prev) => {
+      const copy = [...prev];
+      copy[newIndex] = nextCursor;
+      return copy;
+    });
+
+    setPageIndex(newIndex);
+    await loadPage(nextCursor);
+  }
+
+  async function goPrev() {
+    if (pageIndex === 0) return;
+
+    const newIndex = pageIndex - 1;
+    const prevCursor = pageCursors[newIndex] ?? null;
+
+    setPageIndex(newIndex);
+    await loadPage(prevCursor);
+  }
+
+  const columns = useMemo(
+    () => [
+      { key: "type", label: "Tipo" },
+      { key: "description", label: "Descrição" },
+      { key: "category", label: "Categoria" },
+      { key: "date", label: "Data" },
+      { key: "value", label: "Valor", align: "right" },
+      { key: "actions", label: "Ações", align: "right" },
+    ],
+    []
+  );
 
   return (
     <>
-      <Card title={`Lista de Transações`} className="mt-5">
-        {filtered.length === 0 ? (
+      <Card title="Lista de Transações" className="mt-5">
+        {/* ✅ header da paginação */}
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <p className="text-sm text-slate-600">
+            Página <span className="font-semibold">{pageIndex + 1}</span>
+          </p>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={goPrev}
+              disabled={loading || pageIndex === 0}
+            >
+              Anterior
+            </Button>
+
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={goNext}
+              disabled={loading || !nextCursor}
+            >
+              Próxima
+            </Button>
+          </div>
+        </div>
+
+        {loading ? (
+          <p className="text-sm text-slate-500">Carregando…</p>
+        ) : transactions.length === 0 ? (
           <p>(sem transações)</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="max-h-[70vh] overflow-y-auto overflow-x-auto">
             <table className="w-full border-collapse text-sm">
-              <thead>
+              <thead className="sticky top-0 bg-white">
                 <tr className="text-left">
                   {columns.map((col) => (
                     <th
@@ -164,18 +181,17 @@ export function TransactionsTable() {
               </thead>
 
               <tbody>
-                {filtered.map((t) => {
-                  const textColor =
-                    t.type === "saque"
-                      ? "text-red-500"
-                      : t.type === "deposito"
-                      ? "text-green-600"
-                      : "text-blue-500";
+                {transactions.map((t) => {
+                  const isOut =
+                    t.type === "saque" || t.type === "transferencia";
+                  const textColor = isOut ? "text-red-500" : "text-green-600";
+                  const isIn = t.type === "deposito";
 
                   return (
                     <tr
                       key={t.id}
                       className="transition-all hover:bg-gray-50 cursor-pointer border-b border-gray-200"
+                      onClick={() => openView(t)}
                     >
                       {columns.map((col) => {
                         switch (col.key) {
@@ -183,7 +199,7 @@ export function TransactionsTable() {
                             return (
                               <td key={col.key} className="px-4 py-2">
                                 <div className="flex items-center gap-1.5">
-                                  {t?.type === "deposito" ? (
+                                  {isIn ? (
                                     <RiArrowRightUpLine className={textColor} />
                                   ) : (
                                     <RiArrowRightDownLine
@@ -191,7 +207,7 @@ export function TransactionsTable() {
                                     />
                                   )}
                                   <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
-                                    {t?.type}
+                                    {t.type}
                                   </span>
                                 </div>
                               </td>
@@ -217,6 +233,7 @@ export function TransactionsTable() {
                                 {t.date.toLocaleDateString("pt-BR", {
                                   day: "2-digit",
                                   month: "short",
+                                  year: "numeric",
                                 })}
                               </td>
                             );
@@ -227,7 +244,7 @@ export function TransactionsTable() {
                                 key={col.key}
                                 className={`px-4 py-2 text-right ${textColor}`}
                               >
-                                {isIncome(t) ? "+ " : "- "}
+                                {t.value >= 0 ? "+ " : "- "}
                                 {nfBRL.format(Math.abs(t.value))}
                               </td>
                             );
@@ -236,19 +253,22 @@ export function TransactionsTable() {
                             return (
                               <td
                                 key={col.key}
-                                className="px-4 py-2 flex justify-end"
+                                className="px-4 py-2"
+                                onClick={(e) => e.stopPropagation()}
                               >
-                                <RowActionButtons
-                                  itemLabel={t.description}
-                                  onView={() => openView(t)}
-                                  onEdit={() => openEdit(t)}
-                                  onDelete={() => handleDelete(t)}
-                                />
+                                <div className="flex justify-end">
+                                  <RowActionButtons
+                                    itemLabel={t.description}
+                                    onView={() => openView(t)}
+                                    onEdit={() => openEdit(t)}
+                                    onDelete={() => handleDelete(t)}
+                                  />
+                                </div>
                               </td>
                             );
 
                           default:
-                            return <td key={col.key}></td>;
+                            return <td key={col.key} />;
                         }
                       })}
                     </tr>
@@ -270,7 +290,7 @@ export function TransactionsTable() {
         {editing ? (
           <TransactionForm
             initial={editing}
-            onSaved={handleEditedSaved}
+            onSaved={handleSaved}
             onCancel={() => editRef.current?.close()}
           />
         ) : (

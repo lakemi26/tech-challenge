@@ -14,10 +14,11 @@ import Button from "./Button";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { auth } from "@/services/firebase";
 
 type Props = {
   initial?: Transaction | null;
-  onSaved?: () => void;
+  onSaved?: (saved: Transaction) => void;
   onCancel?: () => void;
 };
 
@@ -61,6 +62,11 @@ function getTodayLocalISODate() {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+function parseISODateToLocalDate(iso: string) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d, 12, 0, 0);
+}
+
 const DESCRIPTION_MAX = 140;
 
 const TYPE_VALUES = ["deposito", "saque", "transferencia"] as const;
@@ -94,18 +100,20 @@ const transactionSchema = z
     dateStr: z
       .string()
       .min(1, "Informe a data.")
-      .refine((s) => !Number.isNaN(new Date(s).getTime()), "Data inválida.")
+      .refine(
+        (s) => !Number.isNaN(parseISODateToLocalDate(s).getTime()),
+        "Data inválida."
+      )
       .refine(
         (s) => s <= getTodayLocalISODate(),
         "A data não pode ser futura."
       ),
   })
   .superRefine((data, ctx) => {
-    const isOutflow = data.type === "saque" || data.type === "transferencia";
-    if (isOutflow && data.category === "salario") {
+    if (data.type === "saque" && data.category === "salario") {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Saque/Transferência não pode ser categorizado como Salário.",
+        message: "Saque não pode ser categorizado como Salário.",
         path: ["category"],
       });
     }
@@ -142,16 +150,17 @@ export default function TransactionForm({ initial, onSaved, onCancel }: Props) {
   const watchedDescription = useWatch({ control, name: "description" });
   const watchedValueMasked = useWatch({ control, name: "valueMasked" });
 
-  const isOutflow = watchedType === "saque" || watchedType === "transferencia";
-
-  const valueSign = watchedType === "deposito" ? "+" : "-";
+  const valueSign =
+    watchedType === "saque" ? "-" : watchedType === "deposito" ? "+" : "±";
 
   const valueBadge = (
     <span
       className={`inline-flex h-6 w-6 items-center justify-center rounded-md text-xs font-bold ${
-        watchedType === "deposito"
+        watchedType === "saque"
+          ? "bg-red-100 text-red-700"
+          : watchedType === "deposito"
           ? "bg-green-100 text-green-700"
-          : "bg-red-100 text-red-700"
+          : "bg-slate-100 text-slate-700"
       }`}
       aria-hidden="true"
     >
@@ -160,19 +169,29 @@ export default function TransactionForm({ initial, onSaved, onCancel }: Props) {
   );
 
   const valueHelper =
-    watchedType === "deposito"
-      ? undefined
-      : "Para saque/transferência, o valor será registrado como negativo.";
+    watchedType === "saque"
+      ? "Para saque, o valor será registrado como negativo."
+      : watchedType === "transferencia"
+      ? "Transferência também conta como saída."
+      : undefined;
 
   useEffect(() => {
     if (initial) {
       const absMasked = nfBRL.format(Math.abs(initial.value));
 
+      const localISO = (() => {
+        const d = initial.date;
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+      })();
+
       reset({
         type: initial.type,
         category: initial.category,
         description: initial.description || "",
-        dateStr: initial.date.toISOString().slice(0, 10),
+        dateStr: localISO,
         valueMasked: absMasked,
       });
       setServerError(null);
@@ -189,10 +208,10 @@ export default function TransactionForm({ initial, onSaved, onCancel }: Props) {
   }, [initial, reset]);
 
   useEffect(() => {
-    if (isOutflow && watchedCategory === "salario") {
+    if (watchedType === "saque" && watchedCategory === "salario") {
       setValue("category", "moradia", { shouldValidate: true });
     }
-  }, [isOutflow, watchedCategory, setValue]);
+  }, [watchedType, watchedCategory, setValue]);
 
   const heading = useMemo(
     () => (isEdit ? "Editar Transação" : "Nova Transação"),
@@ -211,29 +230,42 @@ export default function TransactionForm({ initial, onSaved, onCancel }: Props) {
     try {
       const parsed = parseBRLToNumber(data.valueMasked);
 
-      const isOutflowSubmit =
-        data.type === "saque" || data.type === "transferencia";
-      const value = isOutflowSubmit ? -Math.abs(parsed) : Math.abs(parsed);
+      const value =
+        data.type === "deposito" ? Math.abs(parsed) : -Math.abs(parsed);
+
+      const payload = {
+        type: data.type,
+        category: data.category,
+        description: data.description || "",
+        value,
+        date: parseISODateToLocalDate(data.dateStr),
+      };
+
+      const uid = auth.currentUser?.uid;
+      if (!uid) throw new Error("Usuário não autenticado.");
 
       if (isEdit && initial) {
-        await updateTransaction(initial.id, {
-          type: data.type,
-          category: data.category,
-          description: data.description || "",
-          value,
-          date: new Date(data.dateStr),
+        await updateTransaction(initial.id, payload);
+
+        onSaved?.({
+          ...initial,
+          ...payload,
+          uid,
         });
       } else {
-        await addTransaction({
-          type: data.type,
-          category: data.category,
-          description: data.description || "",
-          value,
-          date: new Date(data.dateStr),
+        const id = await addTransaction(payload);
+
+        onSaved?.({
+          id,
+          uid,
+          type: payload.type,
+          category: payload.category,
+          description: payload.description,
+          value: payload.value,
+          date: payload.date,
+          createdAt: new Date(),
         });
       }
-
-      onSaved?.();
     } catch (err: unknown) {
       const message =
         err instanceof Error
