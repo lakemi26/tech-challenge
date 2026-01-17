@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import {
   Transaction,
   onTransationsByMonth,
@@ -42,6 +42,8 @@ export default function DebugTransactionsList({ year, month1to12 }: Props) {
     return () => unsub();
   }, [y, m]);
 
+  const lastFive = useMemo(() => items.slice(0, 5), [items]);
+
   function openView(t: Transaction) {
     detailsRef.current?.open(t);
   }
@@ -64,6 +66,7 @@ export default function DebugTransactionsList({ year, month1to12 }: Props) {
   type TransactionRowProp = {
     t: Transaction;
   };
+
   function TransactionRow({ t }: TransactionRowProp) {
     const textColor =
       t?.type === "saque"
@@ -76,7 +79,7 @@ export default function DebugTransactionsList({ year, month1to12 }: Props) {
       <section
         key={t.id}
         onClick={() => openView(t)}
-        className="flex justify-between rounded-lg border border-gray-200 bg-white p-5  w-full transition hover:shadow-md mb-3 cursor-pointer"
+        className="flex justify-between rounded-lg border border-gray-200 bg-white p-5 w-full transition hover:shadow-md mb-3 cursor-pointer"
       >
         <div className="flex items-center gap-2.5">
           {t?.type === "deposito" ? (
@@ -112,12 +115,12 @@ export default function DebugTransactionsList({ year, month1to12 }: Props) {
 
   return (
     <div>
-      <Card title={`Últimas transações`}>
-        {items.length === 0 ? (
+      <Card title="Últimas transações">
+        {lastFive.length === 0 ? (
           <p>(sem transações)</p>
         ) : (
           <ul>
-            {items.map((t) => (
+            {lastFive.map((t) => (
               <TransactionRow t={t} key={t.id} />
             ))}
           </ul>
