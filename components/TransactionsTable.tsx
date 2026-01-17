@@ -17,7 +17,17 @@ import RowActionButtons from "./RowActionButtons";
 import TransactionForm from "./TransactionForm";
 import Button from "./Button";
 
+import { useAppSelector } from "@/store/hooks";
+
 const PAGE_SIZE = 20;
+
+function norm(s: string) {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
 
 export function TransactionsTable() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -30,6 +40,8 @@ export function TransactionsTable() {
 
   const editRef = useRef<ModalHandle>(null);
   const detailsRef = useRef<TransactionDetailsHandle>(null);
+
+  const { period, type, category, search } = useAppSelector((s) => s.filters);
 
   const nfBRL = useMemo(
     () =>
@@ -112,6 +124,31 @@ export function TransactionsTable() {
     await loadPage(prevCursor);
   }
 
+  const filteredTransactions = useMemo(() => {
+    const q = norm(search ?? "");
+
+    return transactions.filter((t) => {
+      const sameMonth =
+        t.date.getFullYear() === Number(period.year) &&
+        t.date.getMonth() + 1 === Number(period.month);
+
+      if (!sameMonth) return false;
+
+      if (type !== "all" && t.type !== type) return false;
+
+      if (category !== "all" && t.category !== category) return false;
+
+      if (q) {
+        const hay = norm(
+          `${t.description ?? ""} ${t.category ?? ""} ${t.type ?? ""}`
+        );
+        if (!hay.includes(q)) return false;
+      }
+
+      return true;
+    });
+  }, [transactions, period.year, period.month, type, category, search]);
+
   const columns = useMemo(
     () => [
       { key: "type", label: "Tipo" },
@@ -127,11 +164,18 @@ export function TransactionsTable() {
   return (
     <>
       <Card title="Lista de Transações" className="mt-5">
-        {/* ✅ header da paginação */}
         <div className="mb-3 flex items-center justify-between gap-3">
-          <p className="text-sm text-slate-600">
+          <div className="text-sm text-slate-600">
             Página <span className="font-semibold">{pageIndex + 1}</span>
-          </p>
+            <span className="ml-3 text-slate-400">
+              Mostrando{" "}
+              <span className="font-semibold">
+                {filteredTransactions.length}
+              </span>{" "}
+              de <span className="font-semibold">{transactions.length}</span>{" "}
+              nesta página
+            </span>
+          </div>
 
           <div className="flex items-center gap-2">
             <Button
@@ -156,8 +200,10 @@ export function TransactionsTable() {
 
         {loading ? (
           <p className="text-sm text-slate-500">Carregando…</p>
-        ) : transactions.length === 0 ? (
-          <p>(sem transações)</p>
+        ) : filteredTransactions.length === 0 ? (
+          <p className="text-sm text-slate-600">
+            Nenhuma transação encontrada com os filtros atuais.
+          </p>
         ) : (
           <div className="max-h-[70vh] overflow-y-auto overflow-x-auto">
             <table className="w-full border-collapse text-sm">
@@ -181,7 +227,7 @@ export function TransactionsTable() {
               </thead>
 
               <tbody>
-                {transactions.map((t) => {
+                {filteredTransactions.map((t) => {
                   const isOut =
                     t.type === "saque" || t.type === "transferencia";
                   const textColor = isOut ? "text-red-500" : "text-green-600";

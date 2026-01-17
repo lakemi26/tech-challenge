@@ -1,8 +1,8 @@
 "use client";
 
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { Transaction } from "@/services/transactions";
-import Modal, { ModalHandle } from "./Modal";
+import type { Transaction } from "@/services/transactions";
+import Modal, { type ModalHandle } from "./Modal";
 import Button from "./Button";
 import { FiFileText, FiCalendar, FiTag, FiHash } from "react-icons/fi";
 
@@ -13,6 +13,7 @@ export interface TransactionDetailsHandle {
 
 type Props = {
   onEdit?: (tx: Transaction) => void;
+  onDelete?: (tx: Transaction) => void | Promise<void>;
 };
 
 const nfBRL = new Intl.NumberFormat("pt-BR", {
@@ -21,7 +22,7 @@ const nfBRL = new Intl.NumberFormat("pt-BR", {
 });
 
 const TransactionDetailsModal = forwardRef<TransactionDetailsHandle, Props>(
-  function TransactionDetailsModal({ onEdit }, ref) {
+  function TransactionDetailsModal({ onEdit, onDelete }, ref) {
     const modalRef = useRef<ModalHandle>(null);
     const [tx, setTx] = useState<Transaction | null>(null);
 
@@ -49,6 +50,16 @@ const TransactionDetailsModal = forwardRef<TransactionDetailsHandle, Props>(
       }) ?? "";
 
     function handleClose() {
+      modalRef.current?.close();
+    }
+
+    function handleEdit() {
+      if (tx) onEdit?.(tx);
+    }
+
+    async function handleDelete() {
+      if (!tx) return;
+      await onDelete?.(tx);
       modalRef.current?.close();
     }
 
@@ -131,10 +142,20 @@ const TransactionDetailsModal = forwardRef<TransactionDetailsHandle, Props>(
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center justify-between gap-3">
             <Button variant="secondary" onClick={handleClose}>
               Fechar
             </Button>
+
+            <div className="flex items-center gap-2">
+              {onEdit && (
+                <Button variant="secondary" onClick={handleEdit}>
+                  Editar
+                </Button>
+              )}
+
+              {onDelete && <Button onClick={handleDelete}>Excluir</Button>}
+            </div>
           </div>
         </div>
       </Modal>
