@@ -81,7 +81,7 @@ export default function CadastroPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-16">
+    <div className="min-h-screen bg-linear-to-b from-slate-50 to-white py-16">
       <header className="mx-auto flex max-w-md flex-col items-center gap-3 px-4 py-8">
         <Logo />
         <Link

@@ -4,6 +4,7 @@ import Button from "@/components/Button";
 import FormField from "@/components/FormField";
 import { authErrorMessage, resetPassword } from "@/services/auth";
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 
 export default function ResetSenhaPage() {
   const [email, setEmail] = useState("");
@@ -35,9 +36,9 @@ export default function ResetSenhaPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-6">
       <div className="flex items-center gap-2 text-sm text-gray-500">
-        <a href="/" className="hover: text-gray-700">
+        <Link href="/" className="hover:text-gray-700">
           Início
-        </a>
+        </Link>
         <span>›</span>
         <span className="text-gray-700 font-medium">Reset de senha</span>
       </div>
@@ -49,7 +50,7 @@ export default function ResetSenhaPage() {
         </p>
       </div>
 
-      <section className="max-w-[400px] rounded-2xl border bg-white p-6 shadow-sm">
+      <section className="max-w-100 rounded-2xl border bg-white p-6 shadow-sm">
         <form onSubmit={onSubmit} className="space-y-4 max-w-md">
           <FormField
             label="Email"
@@ -69,10 +70,11 @@ export default function ResetSenhaPage() {
             </p>
           )}
 
-          <div className="flex  items-center justify-between gap-3">
-            <a href="/Login" className="text-sm underline">
+          <div className="flex items-center justify-between gap-3">
+            <Link href="/Login" className="text-sm underline">
               Voltar ao login
-            </a>
+            </Link>
+
             <Button type="submit" disabled={submitting} aria-busy={submitting}>
               {submitting ? "Enviando..." : "Enviar Link"}
             </Button>
