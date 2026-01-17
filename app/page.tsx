@@ -26,12 +26,12 @@ export default function Home() {
         <div className="flex flex-col items-start md:mb-60 max-sm:px-4">
           <Text variant="h1">
             Gerencie suas
-            <br />{" "}
+            <br />
             <Text variant="h1" color="blue">
               finanças
             </Text>{" "}
             com
-            <br />{" "}
+            <br />
             <Text variant="h1" color="purple">
               inteligência
             </Text>
@@ -40,7 +40,8 @@ export default function Home() {
           <Spacer size="sm" />
 
           <Text variant="button" color="tertiary">
-            A plataforma completa para controlar receitas, despesas e<br />{" "}
+            A plataforma completa para controlar receitas, despesas e
+            <br />
             alcançar seus objetivos financeiros de forma simples e segura.
           </Text>
 
@@ -88,8 +89,10 @@ export default function Home() {
             <Text variant="h2">Controle Financeiro Completo</Text>
             <Text color="tertiary">
               Monitore suas receitas,
-              <br /> despesas e saldo em tempo
-              <br /> real com dashboards intuitivos.
+              <br />
+              despesas e saldo em tempo
+              <br />
+              real com dashboards intuitivos.
             </Text>
           </div>
 
@@ -98,8 +101,10 @@ export default function Home() {
             <Text variant="h2">Relatórios Detalhados</Text>
             <Text color="tertiary">
               Visualize seus gastos por
-              <br /> categoria e acompanhe
-              <br /> sua evolução financeira.
+              <br />
+              categoria e acompanhe
+              <br />
+              sua evolução financeira.
             </Text>
           </div>
 
@@ -108,8 +113,10 @@ export default function Home() {
             <Text variant="h2">Segurança Total</Text>
             <Text color="tertiary">
               Seus dados estão protegidos
-              <br /> com a mais alta tecnologia
-              <br /> de segurança.
+              <br />
+              com a mais alta tecnologia
+              <br />
+              de segurança.
             </Text>
           </div>
 
@@ -118,14 +125,15 @@ export default function Home() {
             <Text variant="h2">Design Responsivo</Text>
             <Text color="tertiary">
               Acesse de qualquer dispositivo
-              <br /> - desktop, tablet ou
-              <br /> smartphone.
+              <br />- desktop, tablet ou
+              <br />
+              smartphone.
             </Text>
           </div>
         </div>
       </Section>
 
-      <Spacer size={"lg"} />
+      <Spacer size="lg" />
 
       <Section
         className="flex justify-evenly max-sm:flex-col max-sm:items-center max-sm:gap-8 max-sm:py-16"
@@ -168,8 +176,9 @@ export default function Home() {
           <div className="flex flex-col gap-3">
             <Stars quantity={5} />
             <Text>
-              "Finalmente consegui organizar minhas
-              <br /> finanças de forma simples e eficiente!"
+              &quot;Finalmente consegui organizar minhas
+              <br />
+              finanças de forma simples e eficiente!&quot;
             </Text>
 
             <div className="flex flex-col">
@@ -181,8 +190,9 @@ export default function Home() {
           <div className="flex flex-col gap-3">
             <Stars quantity={5} />
             <Text italic>
-              "O melhor app para controle financeiro que já
-              <br /> usei. Interface intuitiva e completa."
+              &quot;O melhor app para controle financeiro que já
+              <br />
+              usei. Interface intuitiva e completa.&quot;
             </Text>
 
             <div className="flex flex-col">
@@ -194,9 +204,9 @@ export default function Home() {
           <div className="flex flex-col gap-3">
             <Stars quantity={5} />
             <Text>
-              "Revolucionou minha gestão financeira.
+              &quot;Revolucionou minha gestão financeira.
               <br />
-              Recomendo para todos!"
+              Recomendo para todos!&quot;
             </Text>
 
             <div className="flex flex-col">
